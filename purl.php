@@ -41,14 +41,14 @@ class pURL extends pUser {
 	// Get incoming address for relations to other IP class visitors
 		$this->request['host'] = $_SERVER['REMOTE_ADDR'];
 	// There are a couple things we use in pUrl to look at our users //
-		$this->request['refer_by'] = [];	//
+		$this->request['refer_by'] = [];		//
 		$this->request['relative'] = [];	//
 		$this->request['from_addr'] = [];	//
 		$this->add_referer();			//
 	// This is for listing all users in the queue
 		$this->users = [];
 	// Default is to turn off HTTPS:// but the program figures it out itself
-	// or the most part, but if you do run into trouble, just run this function
+	// for the most part, but if you do run into trouble, just run this function
 		$this->option_ssl(false);
 	// Percent of equal critical data points before return in $this->users
 	// Change at any time
@@ -97,7 +97,7 @@ class pURL extends pUser {
 		if ($server == null)
 			return $h;
 
-		$this->prepare_curl_handle($server, $fields, $token);
+		$h = $this->prepare_curl_handle($server, $fields, $token);
 	   
 		return $h;
 	}
@@ -328,7 +328,7 @@ class pURL extends pUser {
 		$this->get_user_log($this->users[0]);
 		$options = array(
 		  'http' => array(
-			'header'  => array("Content-type: application/x-www-form-urlencoded"),
+			'header'  => array("Content-type: $this->content_type"),
 		        'method'  => 'POST',
 		        'content' => http_build_query((array)$this->user)
 		        )
