@@ -81,7 +81,7 @@ class pURL extends pUser {
 
 	// duplicate of save_user_log
 	public function update_user($token) {
-		$this->save_user_log($token);
+		$this->files->save_user_log($token);
 	}
 
 	// input the query string
@@ -112,10 +112,10 @@ class pURL extends pUser {
 	}
 
 	public function send_request() {
-		if ($this->find_user_queue($this->users[0]) == false)
+		if ($this->files->find_user_queue($this->users[0]) == false)
 			return false;
 		$req = [];
-		$this->get_user_log($this->users[0]);
+		$this->files->get_user_log($this->users[0]);
 		$options = array(
 		  'http' => array(
 			'header'  => array("Content-type: $this->content_type"),
@@ -215,7 +215,7 @@ class pURL extends pUser {
 		
 		$host = $this->request['host'];
 		$this->disassemble_IP($host);
-		$this->get_user_queue();
+		$this->files->get_user_queue();
 		$this->users[] = $this->request['session'];
 		$this->patch_connection();
 	}
@@ -251,7 +251,7 @@ class pURL extends pUser {
 
 	// ***
 	public function return_relatives($addr) {
-		$this->get_user_log($addr);
+		$this->files->get_user_log($addr);
 		$x = [];
 		foreach ($this->user as $key) {
 			if ($key != 'from_addr' || json_decode($key) == null)
@@ -269,7 +269,7 @@ class pURL extends pUser {
 		$x = [];
 		if (sizeof($this->users) > 2000) {
 			if ($this->relative_count() > 50) {
-				$this->save_user_log($this->request['session']);
+				$this->files->save_user_log($this->request['session']);
 				array_unique($this->users);
 				file_put_contents("users.conf", json_encode($this->users));
 				exit();
@@ -294,11 +294,11 @@ class pURL extends pUser {
 	public function patch_connection() {
 		if (sizeof($this->users) > 0) {
 			$this->run_queue();
-			$this->save_user_log($this->request['session']);
+			$this->files->save_user_log($this->request['session']);
 			$this->update_queue();
 		}
 		else {
-			$this->save_user_log($this->request['session']);
+			$this->files->save_user_log($this->request['session']);
 			if ($this->users == null)
 				$this->users = [];
 			file_put_contents("users.conf", json_encode($this->users));		
@@ -307,7 +307,7 @@ class pURL extends pUser {
 
 	//***
 	public function run_queue() {
-		if ($this->find_user_queue($this->request['session']) != false)
+		if ($this->files->find_user_queue($this->request['session']) != false)
 			$this->send_request();
 	}
 

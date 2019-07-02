@@ -1,5 +1,7 @@
 <?php
 require_once("abssearch.php");
+require_once("pfiles.php");
+require_once("abssearch.php");
 
 class user_search extends search {
 
@@ -9,7 +11,7 @@ class user_search extends search {
 		foreach ($this->users as $value) {
 			if (!file_exists($this->path_user.$value) || filesize($this->path_user.$value) == 0 || $value == "." || $value == "..")
 				continue;
-			$this->get_user_log($value);
+			$this->files->get_user_log($value);
 			$x = 0;
 			$y = sizeof((array)$this->user) + sizeof((array)$this->user->refer_by) + sizeof((array)$this->relative);
 			foreach ($this->request as $k=>$v) {
