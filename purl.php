@@ -45,7 +45,7 @@ class pURL extends pUser {
 		$this->search = new user_search();
 	// The functions for the file_class object
 	// are in absfiles.php
-		$this->files = new file_class();
+		$this->files = new filemngr();
 	// The functions for the cURL object
 	// are in abscurl.php
 		$this->curl = new curl();
@@ -74,14 +74,8 @@ class pURL extends pUser {
 	}
 
 	public function trace($var) {
-	   
 		echo '<pre>';
 		print_r($var);
-	}
-
-	// duplicate of save_user_log
-	public function update_user($token) {
-		$this->files->save_user_log($token);
 	}
 
 	// input the query string
@@ -233,7 +227,7 @@ class pURL extends pUser {
 	//***
 	public function match_server($host) {
 		$trim = "";
-		if ($host == "::1" || preg_match("/localhost./",$host))
+		if ($host == "::1" || str_replace("localhost","",$host) == true)
 			return true;
 		if (($trim = str_replace("http://","",$host) == true))
 			$this->option_ssl(false);

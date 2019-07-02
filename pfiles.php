@@ -1,8 +1,17 @@
 <?php
 
-class file_class extends files {
+require_once("absfiles.php");
+require_once("traitsetup.php");
+
+class filemngr extends files {
 	
 	use pCon;
+	
+	// duplicate of save_user_log
+	public function update_user($token) {
+		$this->save_user_log($token);
+	}
+
 	// For curl operations
 	public function set_content_type($type) {
 		return $this->content_type = $type;

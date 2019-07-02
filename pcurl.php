@@ -2,7 +2,6 @@
 
 require_once("abscurl.php");
 require_once("traitsetup.php");
-require_once("puser.php");
 
 class curl extends pCurl {
 

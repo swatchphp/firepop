@@ -1,6 +1,9 @@
 <?php
 
 abstract class files {
+	
+	// same as $this->save_user_log()
+	abstract public function update_user($token);
 	// Save $this to file as JSON
 	abstract public function save_server_log($filename = "server.conf");
 	// Return false if fil does not exist

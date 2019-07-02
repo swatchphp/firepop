@@ -1,7 +1,7 @@
 <?php
 require_once("abssearch.php");
 require_once("pfiles.php");
-require_once("abssearch.php");
+require_once("traitsetup.php");
 
 class user_search extends search {
 

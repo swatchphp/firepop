@@ -56,8 +56,6 @@ abstract class pUser {
 	abstract public function match_server($host);
 	// Turn SSL flag on and off
 	abstract public function option_ssl($bool);
-	// same as $this->save_user_log()
-	abstract public function update_user($token);
 	// pass query string and return &server=value
 	abstract public function get_servers($request);
 	// pass query string and return &session=value
