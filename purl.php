@@ -1,12 +1,15 @@
 <?php
+
+// Function Requirements
 require_once("puser.php");
-require_once("pcon.php");
 require_once("pcurl.php");
+require_once("pfiles.php");
+require_once("psearch.php");
+require_once("pcon.php");
 
 class pURL extends pUser {
 
 	use pCon;
-	use pCurl;
 	public $ch;
 	public $user;
 	public $users;
@@ -36,6 +39,16 @@ class pURL extends pUser {
 
 	function __construct() {
 		$this->setup();
+	
+	// The functions for the search object
+	// are in abssearch.php
+		$this->search = new user_search();
+	// The functions for the file_class object
+	// are in absfiles.php
+		$this->files = new file_class();
+	// The functions for the cURL object
+	// are in abscurl.php
+		$this->curl = new curl();
 	// Get query string in either GET or POST
 		$this->request = ($_SERVER['REQUEST_METHOD'] == "GET") ? ($_GET) : ($_POST);
 	// Get incoming address for relations to other IP class visitors
@@ -60,233 +73,10 @@ class pURL extends pUser {
 		$this->content_type = 'application/x-www-form-urlencoded';
 	}
 
-	public function run() {
-
-		// begin
-		$this->ch = $this->create_multi_handler();
-
-		// aggregate data
-		$this->sessions = $this->get_sessions($this->request);
-		foreach ($this->users as $value) {
-			$user_vars = [];
-			$servers = null;
-			$token = null;
-			foreach ($value as $k => $v) {
-				if ($k == 'server')
-					$servers = $v;
-				else if ($k != 'server' && $k != 'session')
-					$user_vars[] = $v;
-				else if ($k == 'session')
-					$token = $v;
-			}
-			$this->handles[] = $this->prepare_curl_handle($servers, $user_vars, $token);
-		}
-
-		// swarm!
-		$this->execute_multiple_curl_handles($this->handles);
-		file_put_contents("users.conf", "");
-	}
-
-	public function create_multi_handler() {
-		return curl_multi_init();
-	}
-
-	public function prepare_curl_handles($server, $fields, $token) {
-		   
-		$h = [];
-		if ($server == null)
-			return $h;
-
-		$h = $this->prepare_curl_handle($server, $fields, $token);
-	   
-		return $h;
-	}
-
-	// This is where we translate our user files into the curl call
-	public function prepare_curl_handle($server_url, $fields, $token){
-
-		$field = [];  
-		foreach ($fields as $k => $v)
-			$field = array_merge($field, array($k => $v));
-		$field = array_merge($field, array("token" => $token));
-		$handle = curl_init($server_url);
-		$user_agent=$_SERVER['HTTP_USER_AGENT'];
-
-		curl_setopt($handle, CURLOPT_TIMEOUT, 20);
-		curl_setopt($handle, CURLOPT_URL, $server_url);
-		curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($handle, CURLOPT_POST, 1);
-		curl_setopt($handle, CURLOPT_FOLLOWLOCATION,true);
-		curl_setopt($handle, CURLOPT_POSTFIELDS, json_encode($field));
-		curl_setopt($handle, CURLOPT_BINARYTRANSFER, true);
-		curl_setopt($handle, CURLOPT_ENCODING, "");
-		curl_setopt($handle, CURLOPT_USERAGENT, $user_agent);
-
-		$len = strlen(json_encode($field));
-		curl_setopt($handle, CURLOPT_HTTPHEADER, array(														  
-			'Content-Type' => $this->content_type,
-			'Content-Length' => $len
-			)
-		);
-
-		$this->page_contents = curl_exec($handle);
-		return $handle;
-	}
-
-	public function add_handles($curl_multi_handler, $handles) {
-		foreach($handles as $handle)
-			curl_multi_add_handle($curl_multi_handler, $handle);
-	}
-   
-	public function perform_multiexec($curl_multi_handler) {
-   
-		do {
-			$mrc = curl_multi_exec($curl_multi_handler, $active);
-		} while ($active > 0);
- 
-		while ($active && $mrc == CURLM_OK) {
-			if (curl_multi_select($curl_multi_handler) != -1) {
-				do {
-					$mrc = curl_multi_exec($curl_multi_handler, $active);
-				} while ($active > 0);
-			}
-		}
-	}
-
-	public function perform_curl_close($curl_multi_handler, $handles) {
-	   
-			  // is this necessary
-		foreach($handles as $handle){
-			curl_multi_remove_handle($curl_multi_handler, $handle);
-		}
-	 
-		curl_multi_close($curl_multi_handler);
-	}
-   
-	public function execute_multiple_curl_handles($handles) {
-		$curl_multi_handler = $this->create_multi_handler();
-		$this->add_handles($curl_multi_handler, $handles);
-		$this->perform_multiexec($curl_multi_handler);
-		$this->perform_curl_close($curl_multi_handler, $handles);
-	}
-   
-   
 	public function trace($var) {
 	   
 		echo '<pre>';
 		print_r($var);
-	}
-
-	//save $this
-	public function save_server_log($filename = "server.conf") {
-		file_put_contents($this->path_server.$filename, json_encode($this));
-	}
-
-	// save everything but ['server']
-	public function save_user_log($filename) {
-		file_put_contents($this->path_user.$filename, json_encode($this->request));			
-	}
-
-	// load everything
-	public function get_server_log($filename = "server.log") {
-		$fp = "";
-		if (!file_exists($this->path_server.$filename))
-			return false;
-		$dim = file_get_contents($this->path_user.$filename);
-		$decoded = json_decode($dim);
-		foreach ($decoded as $k=>$v)
-			$this->$k = $v;
-	}
-
-	// load users in queue
-	public function get_user_queue($filename = "users.conf") {
-		$fp = "";
-		if (!file_exists($filename))
-			return false;
-		$dim = file_get_contents($filename);
-		$users = json_decode($dim);
-		$files = scandir($this->path_user);
-		if (sizeof((array)$files) > 0)
-			$this->users = array_intersect($users, (array)$files);
-	}
-
-	// you'll find that in this file, we look
-	// for SESSID a lot. It's called ['session']
-	// to our script. It should be sent with the
-	// incoming request.
-	public function get_user_log($filename) {
-		//$filename = $_COOKIE['PHPSESSID'];
-		$dim = file_get_contents($this->path_user.$filename);
-		$this->user = json_decode($dim);
-	}
-
-	public function detail_scrape() {
-		$search = [];
-		foreach ($this->users as $value) {
-			if (!file_exists($this->path_user.$value) || filesize($this->path_user.$value) == 0 || $value == "." || $value == "..")
-				continue;
-			$this->get_user_log($value);
-			$x = 0;
-			$y = sizeof((array)$this->user) + sizeof((array)$this->user->refer_by) + sizeof((array)$this->relative);
-			foreach ($this->request as $k=>$v) {
-				if (is_array($k) || is_object($k))
-					$x += sizeof(array_intersect($v, (array)$this->user->$k));
-				else if ($this->request[$k] == $this->user->$k && $x++)
-					continue;
-			}
-			if ($x/$y > $this->percent_diff)
-				$search[] = array($x => $this->user->session);
-		}
-		return $search;
-	}
-
-	// For curl operations
-	public function set_content_type($type) {
-		return $this->content_type = $type;
-	}
-
-	// look for an email address amongst the
-	// files that are in $this->path_user
-	public function find_user_first($token) {
-		$search = [];
-		$search = $this->detail_scrape();
-		krsort($search);
-		if ($search[0] != null)
-			return $search[0];
-		return false;
-	}
-
-	// look for an email address amongst the
-	// files that are in $this->path_user
-	public function find_user_last($token) {
-		$search = [];
-		$search = $this->detail_scrape();
-		ksort($search);
-		if ($search[0] != null)
-			return $search[0];
-		return false;
-	}
-
-	// look for an email address amongst the
-	// files that are in $this->path_user
-	public function find_user_range($token) {
-		$search = [];
-		$search = $this->detail_scrape();
-		krsort($search);
-		if ($search != null)
-			return $search;
-		return false;
-	}
-
-	// look for an email address amongst the
-	// files that are in "users.conf"
-	public function find_user_queue($token) {
-		$search = [];
-		$y = sizeof($this->request);
-		$search = $this->detail_scrape();
-		if ($search != null)
-			return $search;
-		return false;
 	}
 
 	// duplicate of save_user_log

@@ -31,6 +31,7 @@
  *  connection is received.
  * 
 */
+
 trait pCon {
 
 	public $path_user;
