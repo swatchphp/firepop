@@ -1,17 +1,16 @@
 <?php 
 
 require_once("abscurl.php");
-require_once("abssetup.php");
 
-class curl extends pCurl {
+class curl extends Redist implements pCURL {
 
 	public function run() {
 
 		// begin
 		$this->ch = $this->create_multi_handler();
-
+		global $request;
 		// aggregate data
-		$this->sessions = $this->get_sessions($this->request);
+		$this->sessions = parent::get_sessions($request);
 		foreach ($this->users as $value) {
 			$user_vars = [];
 			$servers = null;

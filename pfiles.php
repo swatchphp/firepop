@@ -1,9 +1,8 @@
 <?php
 
 require_once("absfiles.php");
-require_once("abssetup.php");
 
-class filemngr extends files {
+class filemngr extends Redist implements files {
 	
 	// duplicate of save_user_log
 	public function update_user($token) {
@@ -22,11 +21,12 @@ class filemngr extends files {
 
 	// save everything but ['server']
 	public function save_user_log($filename) {
-		file_put_contents($this->path_user.$filename, json_encode($this->request));			
+		global $request;
+		file_put_contents($this->path_user.$filename, json_encode($request));			
 	}
 
 	// load everything
-	public function get_server_log($filename = "server.log") {
+	public function get_server_log($filename = "server.conf") {
 		$fp = "";
 		if (!file_exists($this->path_server.$filename))
 			return false;

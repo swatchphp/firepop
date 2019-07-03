@@ -3,33 +3,13 @@ require_once("abssearch.php");
 require_once("pfiles.php");
 require_once("abssetup.php");
 
-class user_search extends search {
-/*
-	public function detail_scrape() {
-		$search = [];
-		foreach ($this->users as $value) {
-			if (!file_exists($this->path_user.$value) || filesize($this->path_user.$value) == 0 || $value == "." || $value == "..")
-				continue;
-			$this->files->get_user_log($value);
-			$x = 0;
-			$y = sizeof((array)$this->user) + sizeof((array)$this->user->refer_by) + sizeof((array)$this->relative);
-			foreach ($this->request as $k=>$v) {
-				if (is_array($k) || is_object($k))
-					$x += sizeof(array_intersect($v, (array)$this->user->$k));
-				else if ($this->request[$k] == $this->user->$k && $x++)
-					continue;
-			}
-			if ($x/$y > $this->percent_diff)
-				$search[] = array($x => $this->user->session);
-		}
-		return $search;
-	}
-*/    
+class user_search extends Redist implements search {
+
 	// look for an email address amongst the
 	// files that are in $this->path_user
 	public function find_user_first($token) {
 		$search = [];
-		$search = parent::detail_scrape();
+		$search = $this->detail_scrape();
 		krsort($search);
 		if ($search[0] != null)
 			return $search[0];
@@ -62,7 +42,8 @@ class user_search extends search {
 	// files that are in "users.conf"
 	public function find_user_queue($token) {
 		$search = [];
-		$y = sizeof($this->request);
+		global $request;
+		$y = sizeof($request);
 		$search = parent::detail_scrape();
 		if ($search != null)
 			return $search;

@@ -1,11 +1,13 @@
 <?php
 
-require_once("purl.php");
+require_once("static_url.php");
+require_once("static_curl.php");
+//require_once("purl.php");
+require_once("static_search.php");
+require_once("static_file.php");
 require_once("pcurl.php");
-require_once("psearch.php");
-require_once("pfiles.php");
 require_once("abssetup.php");
-
+$request = [];
 class Redist {
 
 	public $files;
@@ -17,23 +19,24 @@ class Redist {
 	}
 
     function instance() {
-        $this->url = new pURL();
-        $this->search = new user_search();
-        $this->files = new filemngr();
-        $this->curl = new curl();
-	$this->url->create();
-	$this->parse_call();
+        $this->url = new static_url();
+        $this->search = new static_search();
+        $this->files = new static_file();
+        $this->curl = new static_curls();
+		$this->url->create();
+		$this->parse_call();
     }
 
 	// This is the only call you need
 	// ***
 	public function parse_call() {
+		global $request;
 		$this->url->spoof_check();
 		$this->url->add_referer();
-		$this->url->get_servers($this->url->request);
-		if (count($this->url->request) == 4)
+		$this->url->get_servers($request);
+		if (count($request) == 4)
 			exit();
-		if (!$this->url->match_server($this->url->request['host'])) {
+		if (!$this->url->match_server($request['host'])) {
 			echo "Fatal Error: Your address is unknown";
 			exit();
 		}
@@ -41,16 +44,24 @@ class Redist {
 			echo "Fatal Error: Target address unknown";
 			exit();
 		}
-		
-		$host = $this->url->request['host'];
+
+		$host = $request['host'];
+		//$this->url->disassemble_IP($host);
 		$this->url->disassemble_IP($host);
 		$this->files->get_user_queue();
-		$this->url->get_sessions($this->url->request);
-	//	$this->url->users[] = $this->url->request['session'];
+		$this->url->get_sessions($request);
+	//	$this->url->users[] = $request['session'];
 		$this->url->patch_connection();
+
 	}
 
+	// This scrapes for information from all users at once
+	// If $this->percent_diff == 0.75 && a user is that close
+	// to the user being scraped for, then that user will
+	// be used, along any others that meet the description
+	// compared to $this->percent_diff
 	public function detail_scrape() {
+		global $request;
 		$search = [];
 		foreach ($this->url->users as $value) {
 			if (!file_exists($this->files->path_user.$value) || filesize($this->files->path_user.$value) == 0 || $value == "." || $value == "..")
@@ -58,16 +69,14 @@ class Redist {
 			$this->files->get_user_log($value);
 			$x = 0;
 			$y = sizeof((array)$this->user) + sizeof((array)$this->user->refer_by) + sizeof((array)$this->user->from_addr);
-			foreach ($this->request as $k=>$v) {
+			foreach ($request as $k=>$v) {
                 if($k == 'from_addr') {
-                    foreach ($v as $rel) {
-                        if ($rel == $value->request->$k->$v->$rel)
-                            $x += 1;
-                    }
+					if (sizeof(array_intersect($k, (array)$this->user->$k)) > 2)
+                        $x += 1;
                 }
 				else if (is_array($k) || is_object($k))
 					$x += sizeof(array_intersect($v, (array)$this->user->$k));
-				else if ($this->request[$k] == $this->user->$k && $x++)
+				else if ($request[$k] == $this->user->$k && $x++)
 					continue;
 			}
 			if ($x/$y > $this->percent_diff)
