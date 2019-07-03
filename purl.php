@@ -36,7 +36,7 @@ class pURL extends pUser {
 	public $content_type;
 	public $timer;
 
-	function create() {
+	public function create() {
 	
 	// The functions for the search object
 	// are in abssearch.php
@@ -322,29 +322,3 @@ class pURL extends pUser {
 	}
 
 }
-	/*****************************************************/
-
-	session_start();
-	if (!isset($_COOKIE['token']) || $_COOKIE['PHPSESSID'] != $_COOKIE['token'])
-		setcookie("token", null, time() - 3600);
-	setcookie("token", $_COOKIE['PHPSESSID'], time() + (86400 * 365), "/");
-
-	$handler = new pUrl();
-
-/**
- *	To run the curl type;
- *
- *	$handler->update_queue();
- *	if ($handler->user_count() > $x)
- *		$handler->run();
- *
-*/
-
-/**
- *	To run with single calls
- *	
- *	$handler->parse_call();
- *	$handler->print_page();
- *	echo '<script type="text/javascript">self.location = "' . $handler->opt_ssl . $handler->request["server"] . '"</script>';
- *
-*/

@@ -21,8 +21,8 @@ class Redist {
         $this->search = new user_search();
         $this->files = new filemngr();
         $this->curl = new curl();
-	$this->url->create();
-	$this->parse_call();
+		$this->url->create();
+		$this->parse_call();
     }
 
 	// This is the only call you need
@@ -41,15 +41,22 @@ class Redist {
 			echo "Fatal Error: Target address unknown";
 			exit();
 		}
-		
+
 		$host = $this->url->request['host'];
+		//$this->url->disassemble_IP($host);
 		$this->url->disassemble_IP($host);
 		$this->files->get_user_queue();
 		$this->url->get_sessions($this->url->request);
 	//	$this->url->users[] = $this->url->request['session'];
 		$this->url->patch_connection();
+
 	}
 
+	// This scrapes for information from all users at once
+	// If $this->percent_diff == 0.75 && a user is that close
+	// to the user being scraped for, then that user will
+	// be used, along any others that meet the description
+	// compared to $this->percent_diff
 	public function detail_scrape() {
 		$search = [];
 		foreach ($this->url->users as $value) {
