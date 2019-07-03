@@ -42,7 +42,8 @@ class user_search extends Redist implements search {
 	// files that are in "users.conf"
 	public function find_user_queue($token) {
 		$search = [];
-		$y = sizeof($this->request);
+		global $request;
+		$y = sizeof($request);
 		$search = parent::detail_scrape();
 		if ($search != null)
 			return $search;

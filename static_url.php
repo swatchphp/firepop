@@ -14,10 +14,12 @@ class static_url extends purl implements pUser {
     }
 
 	public function get_servers($request) {
+		global $request;
         return parent::get_servers($request);
     }
 
 	public function get_sessions($request) {
+		global $request;
         return parent::get_sessions($request);
     }
 
