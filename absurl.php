@@ -21,60 +21,51 @@
  *  as well. Read through the files and
  *  there will be an explanation on everything.
  *  
- *  This abstract has the function list of the
+ *  This pus the function list of the
  *  entire purl.php script.
  * 
 */
-abstract class pUser {
+interface pUser {
 
 	// Validate incoming or outgoing address
-	abstract public function spoof_check();
+	public function spoof_check();
 	// Trace variable content
-	abstract public function trace($var);
+	public function trace($var);
 	// Return closest addresses for analysis
-	abstract public function return_relatives($addr);
-	// The only function completely necessary.
-	// Begins all transactions except for the
-	// cURL ones.
-	abstract public function parse_call();
+	public function return_relatives($addr);
 	// Dissolves duplicate calls, and 
 	// sends to patching if count($this->users) > 2000
 	// in the queue
-	abstract public function delay_connection();
-	// Set content type of redirects
-	abstract public function set_content_type($content_type);
-	// Validate their is a REQUEST in the query
-	// string
-	abstract public function validate_request();
+	public function delay_connection();
 	// Create action to disperse earliest
 	// user connected to their desired destination
-	abstract public function send_request();
+	public function send_request();
 	// Checks spoofing, adds user to queue
 	// runs patch_connection
-	abstract public function patch_connection();
+	public function patch_connection();
 	// Check for valid incoming $host
-	abstract public function match_server($host);
+	public function match_server($host);
 	// Turn SSL flag on and off
-	abstract public function option_ssl($bool);
+	public function option_ssl($bool);
 	// pass query string and return &server=value
-	abstract public function get_servers($request);
+	public function get_servers($request);
 	// pass query string and return &session=value
-	abstract public function get_sessions($request);
+	public function get_sessions($request);
 	// count($this->users)
-	abstract public function user_count();
+	public function user_count();
 	// Add user to the queue
-	abstract public function update_queue();
-	// Make abstract info count of who has been
+	public function update_queue();
+	// Make pufo count of who has been
 	// going through the system. Images taken by IP block
-	abstract public function disassemble_IP($host);
+	public function disassemble_IP($host);
 	// Find out if a new ABC block has come in to the
 	// network.
-	abstract public function make_relationships();
+	public function make_relationships();
 	// Checks for new refering site
-	abstract public function add_referer();
+	public function add_referer();
 	// Checks refer history for max size
-	abstract public function remove_referer();
+	public function remove_referer();
 	// Returns users who have come from same ABC blocks
-	abstract public function relative_count();
+	public function relative_count();
 
 }

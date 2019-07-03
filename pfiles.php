@@ -3,20 +3,13 @@
 require_once("absfiles.php");
 require_once("traitsetup.php");
 
-class filemngr extends files {
-	
-	use pCon;
+class filemngr extends Redist implements files {
 	
 	// duplicate of save_user_log
 	public function update_user($token) {
 		$this->save_user_log($token);
 	}
 
-	// For curl operations
-	public function set_content_type($type) {
-		return $this->content_type = $type;
-    }
-    
 	//save $this
 	public function save_server_log($filename = "server.conf") {
 		file_put_contents($this->path_server.$filename, json_encode($this));

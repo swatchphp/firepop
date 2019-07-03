@@ -3,9 +3,13 @@ require_once("abssearch.php");
 require_once("pfiles.php");
 require_once("traitsetup.php");
 
-class user_search extends search {
+class user_search extends Redist implements search {
 
-    use pCon;
+
+    function __construct() {
+        $this->files = new filemngr();
+    }
+
 	public function detail_scrape() {
 		$search = [];
 		foreach ($this->users as $value) {
@@ -13,9 +17,15 @@ class user_search extends search {
 				continue;
 			$this->files->get_user_log($value);
 			$x = 0;
-			$y = sizeof((array)$this->user) + sizeof((array)$this->user->refer_by) + sizeof((array)$this->relative);
+			$y = sizeof((array)$this->user) + sizeof((array)$this->user->refer_by) + sizeof((array)$this->user->from_addr);
 			foreach ($this->request as $k=>$v) {
-				if (is_array($k) || is_object($k))
+                if($k == 'from_addr') {
+                    foreach ($v as $rel) {
+                        if ($rel == $value->request->$k->$v->$rel)
+                            $x += 1;
+                    }
+                }
+				else if (is_array($k) || is_object($k))
 					$x += sizeof(array_intersect($v, (array)$this->user->$k));
 				else if ($this->request[$k] == $this->user->$k && $x++)
 					continue;
@@ -69,5 +79,4 @@ class user_search extends search {
 			return $search;
 		return false;
 	}
-
 }

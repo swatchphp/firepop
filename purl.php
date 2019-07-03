@@ -1,15 +1,13 @@
 <?php
 
 // Function Requirements
-require_once("puser.php");
 require_once("pcurl.php");
 require_once("pfiles.php");
 require_once("psearch.php");
-require_once("pcon.php");
+require_once("traitsetup.php");
 
-class pURL extends pUser {
+class pURL extends Redist implements pUser {
 
-	use pCon;
 	public $ch;
 	public $user;
 	public $users;
@@ -98,13 +96,6 @@ class pURL extends pUser {
 		return 0;
 	}
 
-	// make sure there was a request
-	public function validate_request() {
-		if ($this->request != null && sizeof($this->request) != 1)
-			return true;
-		return false;
-	}
-
 	public function send_request() {
 		if ($this->files->find_user_queue($this->users[0]) == false)
 			return false;
@@ -157,10 +148,9 @@ class pURL extends pUser {
 				continue;
 			if ($this->request['from_addr']['A'] == $v1->A && $this->request['from_addr']['B'] == $v1->B &&
 				$this->request['from_addr']['C'] == $v1->C)
-				$new_relations[] = $v->session;
+				$new_relations[] = $v1->session;
 		}
-		$unique = array_unique($new_relations);
-		$this->request['relative'] = $new_relations;
+		$this->request['relative'][] = $new_relations;
 	}
 
 	public function add_referer () {
@@ -190,28 +180,6 @@ class pURL extends pUser {
 			}
 		}
 		return false;
-	}
-
-	// This is the only call you need
-	// ***
-	public function parse_call() {
-		$this->spoof_check();
-		if (count($this->request) == 4)
-			exit();
-		if (!$this->match_server($this->request['host'])) {
-			echo "Fatal Error: Your address is unknown";
-			exit();
-		}
-		else if (!$this->match_server($this->request['server'])) {
-			echo "Fatal Error: Target address unknown";
-			exit();
-		}
-		
-		$host = $this->request['host'];
-		$this->disassemble_IP($host);
-		$this->files->get_user_queue();
-		$this->users[] = $this->request['session'];
-		$this->patch_connection();
 	}
 
 	// ***
@@ -253,7 +221,7 @@ class pURL extends pUser {
 			if ($key->A == $this->request['from_addr']['A']
 				&& $key->B == $this->request['from_addr']['B']
 				&& $key->C == $this->request['from_addr']['C'])
-				$x[] = $relationships;
+				$x[] = $key;
 		}
 		return $x;
 	}
@@ -315,31 +283,5 @@ class pURL extends pUser {
 	public function print_page() {
 		echo $this->page_contents;
 	}
-
 }
-	/*****************************************************/
 
-	session_start();
-	if (!isset($_COOKIE['token']) || $_COOKIE['PHPSESSID'] != $_COOKIE['token'])
-		setcookie("token", null, time() - 3600);
-	setcookie("token", $_COOKIE['PHPSESSID'], time() + (86400 * 365), "/");
-
-	$handler = new pUrl();
-
-/**
- *	To run the curl type;
- *
- *	$handler->update_queue();
- *	if ($handler->user_count() > $x)
- *		$handler->run();
- *
-*/
-
-/**
- *	To run with single calls
- *	
- *	$handler->parse_call();
- *	$handler->print_page();
- *	echo '<script type="text/javascript">self.location = "' . $handler->opt_ssl . $handler->request["server"] . '"</script>';
- *
-*/

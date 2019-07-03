@@ -1,11 +1,9 @@
 <?php 
 
 require_once("abscurl.php");
-require_once("traitsetup.php");
 
-class curl extends pCurl {
+class curl extends Redist implements pCurl {
 
-	use pCon;
 	public function run() {
 
 		// begin
@@ -33,6 +31,11 @@ class curl extends pCurl {
 		file_put_contents("users.conf", "");
 	}
 
+	// For curl operations
+	public function set_content_type($type) {
+		return $this->content_type = $type;
+	}
+	
 	public function create_multi_handler() {
 		return curl_multi_init();
 	}
