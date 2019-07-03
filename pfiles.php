@@ -1,11 +1,9 @@
 <?php
 
 require_once("absfiles.php");
-require_once("traitsetup.php");
+require_once("abssetup.php");
 
 class filemngr extends files {
-	
-	use pCon;
 	
 	// duplicate of save_user_log
 	public function update_user($token) {

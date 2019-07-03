@@ -27,6 +27,8 @@
 */
 abstract class pCurl {
 
+	// Set content type of redirects
+	abstract public function set_content_type($content_type);
 	// Singularly call instances of prepare_curl_handle()
 	abstract public function prepare_curl_handles($server_url, $fields, $token);
 	// This is where we translate our user files into the curl call

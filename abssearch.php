@@ -20,6 +20,6 @@ abstract class search {
 	// to the usre being scraped for, then that user will
 	// be used, along any others that meet the description
 	// compared to $this->percent_diff
-	abstract public function detail_scrape();
+//	abstract public function detail_scrape();
 
 }

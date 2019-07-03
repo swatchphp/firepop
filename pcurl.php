@@ -1,11 +1,10 @@
 <?php 
 
 require_once("abscurl.php");
-require_once("traitsetup.php");
+require_once("abssetup.php");
 
 class curl extends pCurl {
 
-	use pCon;
 	public function run() {
 
 		// begin
@@ -31,6 +30,11 @@ class curl extends pCurl {
 		// swarm!
 		$this->execute_multiple_curl_handles($this->handles);
 		file_put_contents("users.conf", "");
+	}
+
+	// For curl operations
+	public function set_content_type($type) {
+		return $this->content_type = $type;
 	}
 
 	public function create_multi_handler() {
@@ -84,7 +88,7 @@ class curl extends pCurl {
 			curl_multi_add_handle($curl_multi_handler, $handle);
 	}
    
-	public function perform_multiexec($curl_multi_handler) {
+	public function perform_multi_exec($curl_multi_handler) {
    
 		do {
 			$mrc = curl_multi_exec($curl_multi_handler, $active);

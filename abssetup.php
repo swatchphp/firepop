@@ -32,7 +32,7 @@
  * 
 */
 
-trait pCon {
+class pCon {
 
 	public $path_user;
 	public $path_server;

@@ -1,15 +1,14 @@
 <?php
 
 // Function Requirements
-require_once("puser.php");
+require_once("absurl.php");
 require_once("pcurl.php");
 require_once("pfiles.php");
 require_once("psearch.php");
-require_once("pcon.php");
+require_once("abssetup.php");
 
 class pURL extends pUser {
 
-	use pCon;
 	public $ch;
 	public $user;
 	public $users;
@@ -37,8 +36,7 @@ class pURL extends pUser {
 	public $content_type;
 	public $timer;
 
-	function __construct() {
-		$this->setup();
+	function create() {
 	
 	// The functions for the search object
 	// are in abssearch.php
@@ -80,12 +78,16 @@ class pURL extends pUser {
 
 	// input the query string
 	public function get_servers($request) {
+		if (!isset($request['server']))
+			return null;
 		$this->servers = $request['server'];
 		return $request['server'];
 	}
 
 	// input the query string
 	public function get_sessions($request){
+		if (!isset($request['session']))
+			return null;
 		return $request['session'];
 	}
 
@@ -216,7 +218,10 @@ class pURL extends pUser {
 
 	// ***
 	public function spoof_check() {
-		$pre_spoof_filter = file_get_contents("spoof_list");
+		if (file_exists("spoof_list"))
+			$pre_spoof_filter = file_get_contents("spoof_list");
+		else
+			return true;
 		$spoof_list = json_decode($pre_spoof_filter);
 		if ($spoof_list == null)
 			return true;
