@@ -1,11 +1,10 @@
 <?php
 require_once("abssearch.php");
 require_once("pfiles.php");
-require_once("traitsetup.php");
+require_once("abssetup.php");
 
 class user_search extends search {
-
-    use pCon;
+/*
 	public function detail_scrape() {
 		$search = [];
 		foreach ($this->users as $value) {
@@ -25,12 +24,12 @@ class user_search extends search {
 		}
 		return $search;
 	}
-    
+*/    
 	// look for an email address amongst the
 	// files that are in $this->path_user
 	public function find_user_first($token) {
 		$search = [];
-		$search = $this->detail_scrape();
+		$search = parent::detail_scrape();
 		krsort($search);
 		if ($search[0] != null)
 			return $search[0];
@@ -41,7 +40,7 @@ class user_search extends search {
 	// files that are in $this->path_user
 	public function find_user_last($token) {
 		$search = [];
-		$search = $this->detail_scrape();
+		$search = parent::detail_scrape();
 		ksort($search);
 		if ($search[0] != null)
 			return $search[0];
@@ -52,7 +51,7 @@ class user_search extends search {
 	// files that are in $this->path_user
 	public function find_user_range($token) {
 		$search = [];
-		$search = $this->detail_scrape();
+		$search = parent::detail_scrape();
 		krsort($search);
 		if ($search != null)
 			return $search;
@@ -64,7 +63,7 @@ class user_search extends search {
 	public function find_user_queue($token) {
 		$search = [];
 		$y = sizeof($this->request);
-		$search = $this->detail_scrape();
+		$search = parent::detail_scrape();
 		if ($search != null)
 			return $search;
 		return false;

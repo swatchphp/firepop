@@ -41,8 +41,6 @@ abstract class pUser {
 	// sends to patching if count($this->users) > 2000
 	// in the queue
 	abstract public function delay_connection();
-	// Set content type of redirects
-	abstract public function set_content_type($content_type);
 	// Validate their is a REQUEST in the query
 	// string
 	abstract public function validate_request();
