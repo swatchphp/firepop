@@ -1,9 +1,11 @@
 <?php
 
+require_once("static_url.php");
+require_once("static_curl.php");
 require_once("purl.php");
-require_once("pcurl.php");
 require_once("psearch.php");
 require_once("pfiles.php");
+require_once("pcurl.php");
 require_once("abssetup.php");
 
 class Redist {
@@ -17,10 +19,10 @@ class Redist {
 	}
 
     function instance() {
-        $this->url = new pURL();
+        $this->url = new static_url();
         $this->search = new user_search();
         $this->files = new filemngr();
-        $this->curl = new curl();
+        $this->curl = new static_curls();
 		$this->url->create();
 		$this->parse_call();
     }

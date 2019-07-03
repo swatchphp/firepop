@@ -1,8 +1,9 @@
 <?php
 
+require_once("absurl.php");
+require_once("purl.php");
 
-
-class static_url extends pURL implements pUser {
+class static_url extends purl implements pUser {
 
     public function create() {
         return parent::create();

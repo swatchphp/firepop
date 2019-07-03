@@ -1,13 +1,13 @@
 <?php
 
 // Function Requirements
-require_once("absurl.php");
+require_once("static_url.php");
 require_once("pcurl.php");
 require_once("pfiles.php");
 require_once("psearch.php");
 require_once("abssetup.php");
 
-class pURL extends pUser {
+class pURL extends Redist implements pUser {
 
 	public $ch;
 	public $user;

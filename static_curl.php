@@ -1,7 +1,8 @@
 <?php
+include_once("abscurl.php");
 include_once("pcurl.php");
 
-class static_curls extends cURL implements pCurl {
+class static_curls extends curl implements pCurl {
 
 	public function execute_multiple_curl_handles($handles) {
         return parent::execute_multiple_curl_handles($handles);

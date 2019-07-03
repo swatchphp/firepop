@@ -1,9 +1,8 @@
 <?php 
 
 require_once("abscurl.php");
-require_once("abssetup.php");
 
-class curl extends pCurl {
+class curl extends Redist implements pCURL {
 
 	public function run() {
 
