@@ -1,6 +1,6 @@
 <?php
 
-// Function Requirements
+// static Function Requirements
 require_once("static_url.php");
 require_once("pcurl.php");
 require_once("pfiles.php");
@@ -9,44 +9,44 @@ require_once("abssetup.php");
 
 class pURL extends Redist implements pUser {
 
-	public $ch;
-	public $user;
-	public $users;
+	static $ch;
+	static $user;
+	static $users;
 	// Required in REQUEST	//
-	public $server;		//
-	public $fields;
+	static $server;		//
+	static $fields;
 	// Required in REQUEST	//
-	public $session;	//
-	public $handles;
+	static $session;	//
+	static $handles;
 	// DO NOT PUT IN REQUEST//
-	public $refer_by;	//
-	public $relative;	//
-	public $from_addr;	//
+	static $refer_by;	//
+	static $relative;	//
+	static $from_addr;	//
 	// DO NOT PUT IN REQUEST//
-	public $path_user;
-	public $path_server;
-	public $opt_ssl;
-	public $page_contents;
-	public $percent_diff;
+	static $path_user;
+	static $path_server;
+	static $opt_ssl;
+	static $page_contents;
+	static $percent_diff;
 	// Set for MAX delay in microseconds
-	public $delay;
+	static $delay;
 	// Set for MAX of history length of users
-	public $max_history;
-	public $content_type;
-	public $timer;
+	static $max_history;
+	static $content_type;
+	static $timer;
 
-	public function create() {
+	public static function create() {
 		global $request;
 	
-	// The functions for the search object
+	// The static functions for the search object
 	// are in abssearch.php
-		$this->search = new user_search();
-	// The functions for the file_class object
+		self::$search = new user_search();
+	// The static functions for the file_class object
 	// are in absfiles.php
-		$this->files = new filemngr();
-	// The functions for the cURL object
+		self::$files = new filemngr();
+	// The static functions for the cURL object
 	// are in abscurl.php
-		$this->curl = new curl();
+		self::$curl = new curl();
 	// Get query string in either GET or POST
 		$request = ($_SERVER['REQUEST_METHOD'] == "GET") ? ($_GET) : ($_POST);
 	// Get incoming address for relations to other IP class visitors
@@ -55,38 +55,38 @@ class pURL extends Redist implements pUser {
 		$request['refer_by'] = [];		//
 		$request['relative'] = [];	//
 		$request['from_addr'] = [];	//
-		$this->add_referer();			//
+		self::add_referer();			//
 	// This is for listing all users in the queue
-		$this->users = [];
+		self::$users = [];
 	// Default is to turn off HTTPS:// but the program figures it out itself
-	// for the most part, but if you do run into trouble, just run this function
-		$this->option_ssl(false);
-	// Percent of equal critical data points before return in $this->users
+	// for the most part, but if you do run into trouble, just run this static function
+		self::option_ssl(false);
+	// Percent of equal critical data points before return in self::$users
 	// Change at any time
-		$this->percent_diff = 0.75;
-	// microsecond delay in wave function
-		$this->delay = 1175;
-		$this->max_history = 10;
-		$this->timer = time();
-		$this->content_type = 'application/x-www-form-urlencoded';
+		self::$percent_diff = 0.75;
+	// microsecond delay in wave static function
+		self::$delay = 1175;
+		self::$max_history = 10;
+		self::$timer = time();
+		self::$content_type = 'application/x-www-form-urlencoded';
 	}
 
-	public function trace($var) {
+	public static function trace($var) {
 		echo '<pre>';
 		print_r($var);
 	}
 
 	// input the query string
-	public function get_servers($request) {
+	public static function get_servers($request) {
 		global $request;
 		if (!isset($request['server']))
 			return null;
-		$this->servers = $request['server'];
+		self::$servers = $request['server'];
 		return $request['server'];
 	}
 
 	// input the query string
-	public function get_sessions($request){
+	public static function get_sessions($request){
 		global $request;
 		if (!isset($request['session']))
 			return null;
@@ -95,49 +95,49 @@ class pURL extends Redist implements pUser {
 
 	// return the number of users present
 	// and committed to sending info of.
-	public function user_count() {
-		if (is_array($this->users))
-			return sizeof($this->users);
-		$this->users = [];
+	public static function user_count() {
+		if (is_array(self::$users))
+			return sizeof(self::$users);
+		self::$users = [];
 		return 0;
 	}
 
 	// make sure there was a request
-	public function validate_request() {
+	public static function validate_request() {
 		global $request;
 		if ($request != null && sizeof($request) != 1)
 			return true;
 		return false;
 	}
 
-	public function send_request() {
-		if ($this->files->find_user_queue($this->users[0]) == false)
+	public static function send_request() {
+		if (static_file::find_user_queue(self::$users[0]) == false)
 			return false;
 		$req = [];
-		$this->files->get_user_log($this->users[0]);
+		static_file::get_user_log(self::$users[0]);
 		$options = array(
 		  'http' => array(
-			'header'  => array("Content-type: $this->content_type"),
+			'header'  => array("Content-type: self::content_type"),
 		        'method'  => 'POST',
-		        'content' => http_build_query((array)$this->user)
+		        'content' => http_build_query((array)self::$user)
 		        )
 		);
-		array_shift($this->users);
+		array_shift(self::$users);
 		
-		file_put_contents("users.conf", json_encode($this->users));
+		file_put_contents("users.conf", json_encode(self::$users));
 		$context = stream_context_create($options);
-		$url = $this->opt_ssl . $this->user->server;
-		$this->page_contents = file_get_contents($url, false, $context);
+		$url = self::opt_ssl . self::$user->server;
+		self::$page_contents = file_get_contents($url, false, $context);
 		return true;
 	}
 
-	public function update_queue() {
+	public static function update_queue() {
 		global $request;
-		$this->update_user($request['session']);
-		file_put_contents("users.conf", json_encode($this->users));
+		self::update_user($request['session']);
+		file_put_contents("users.conf", json_encode(self::$users));
 	}
 
-	public function disassemble_IP($host) {
+	public static function disassemble_IP($host) {
 		global $request;
 		if ($host == "::1")
 			return;
@@ -154,13 +154,13 @@ class pURL extends Redist implements pUser {
 		$request['from_addr']['B'] = $ip_pieces[1];
 		$request['from_addr']['C'] = $ip_pieces[2];
 		$request['from_addr']['D'] = $ip_pieces[3];
-		$this->make_relationships();
+		self::make_relationships();
 	}
 
-	public function make_relationships() {
+	public static function make_relationships() {
 		global $request;
 		$new_relations = [];
-		foreach ($this->users as $k => $v1) {
+		foreach (self::$users as $k => $v1) {
 			if ($v1 != "from_addr" || $v1->session == $request['session'])
 				continue;
 			if ($request['from_addr']['A'] == $v1->A && $request['from_addr']['B'] == $v1->B &&
@@ -171,31 +171,31 @@ class pURL extends Redist implements pUser {
 		$request['relative'] = $new_relations;
 	}
 
-	public function add_referer () {
+	public static function add_referer () {
 		global $request;
 		if (isset($_SERVER['HTTP_REFERER']))
 			$request['refer_by'][] = $_SERVER['HTTP_REFERER'];
 		else
 			$request['refer_by'][] = "local";
-		$this->remove_referer();
+		self::remove_referer();
 		return true;
 	}
 
-	public function remove_referer() {
+	public static function remove_referer() {
 		global $request;
-		if (sizeof($request['refer_by']) == $this->max_history)
+		if (sizeof($request['refer_by']) == self::$max_history)
 			array_shift($request['refer_by']);
 		return sizeof($request['refer_by']);
 	}
 
 	//***
-	public function relative_count() {
-		if ($this->users == null)
-			$this->users = [];
-		foreach ($this->users as $key => $val) {
-			$x = $this->return_relatives($val);
+	public static function relative_count() {
+		if (self::$users == null)
+			self::$users = [];
+		foreach (self::$users as $key => $val) {
+			$x = self::$return_relatives($val);
 			if ($x > 50) {
-				$this->delay_connection();
+				self::$delay_connection();
 				return true;
 			}
 		}
@@ -204,29 +204,29 @@ class pURL extends Redist implements pUser {
 
 	// This is the only call you need
 	// ***
-	public function parse_call() {
+	public static function parse_call() {
 		global $request;
-		$this->spoof_check();
+		self::spoof_check();
 		if (count($request) == 4)
 			exit();
-		if (!$this->match_server($request['host'])) {
+		if (!self::match_server($request['host'])) {
 			echo "Fatal Error: Your address is unknown";
 			exit();
 		}
-		else if (!$this->match_server($request['server'])) {
+		else if (!self::match_server($request['server'])) {
 			echo "Fatal Error: Target address unknown";
 			exit();
 		}
 		
 		$host = $request['host'];
-		$this->disassemble_IP($host);
-		$this->files->get_user_queue();
-		$this->users[] = $request['session'];
-		$this->patch_connection();
+		self::disassemble_IP($host);
+		static_file::get_user_queue();
+		self::$users[] = $request['session'];
+		self::patch_connection();
 	}
 
 	// ***
-	public function spoof_check() {
+	public static function spoof_check() {
 		global $request;
 		if (file_exists("spoof_list"))
 			$pre_spoof_filter = file_get_contents("spoof_list");
@@ -240,15 +240,15 @@ class pURL extends Redist implements pUser {
 	}
 
 	//***
-	public function match_server($host) {
+	public static function match_server($host) {
 		global $request;
 		$trim = "";
 		if ($host == "::1" || str_replace("localhost","",$host) == true)
 			return true;
 		if (($trim = str_replace("http://","",$host) == true))
-			$this->option_ssl(false);
+			self::option_ssl(false);
 		else if (($trim = str_replace("https://","",$host) == true))
-			$this->option_ssl(true);
+			self::option_ssl(true);
 		if (filter_var($host, FILTER_VALIDATE_URL) == false
 			&& ($check_addr_list = gethostbynamel($host)) == false) {
 			$spoof_list[] = $request['host'];
@@ -260,11 +260,11 @@ class pURL extends Redist implements pUser {
 	}
 
 	// ***
-	public function return_relatives($addr) {
+	public static function return_relatives($addr) {
 		global $request;
-		$this->files->get_user_log($addr);
+		static_file::get_user_log($addr);
 		$x = [];
-		foreach ($this->user as $key) {
+		foreach (self::$user as $key) {
 			if ($key != 'from_addr' || json_decode($key) == null)
 				continue;
 			if ($key->A == $request['from_addr']['A']
@@ -276,64 +276,64 @@ class pURL extends Redist implements pUser {
 	}
 
 	// ***
-	public function delay_connection() {
+	public static function delay_connection() {
 		global $request;
 		$x = [];
-		if (sizeof($this->users) > 2000) {
-			if ($this->relative_count() > 50) {
-				$this->files->save_user_log($request['session']);
-				array_unique($this->users);
-				file_put_contents("users.conf", json_encode($this->users));
+		if (sizeof(self::$users) > 2000) {
+			if (self::relative_count() > 50) {
+				static_file::save_user_log($request['session']);
+				array_unique(self::$users);
+				file_put_contents("users.conf", json_encode(self::$users));
 				exit();
 			}
 		}
-		array_unique($this->users);
-		if ($this->users[0] != $request['session']) {
+		array_unique(self::$users);
+		if (self::$users[0] != $request['session']) {
 			$y = file_get_contents("users.conf");
 			$x = json_decode($y);
-			while ($x[0] != $request['session'] && time() - $this->timer < 3000) {
+			while ($x[0] != $request['session'] && time() - self::$timer < 3000) {
 				$y = file_get_contents("users.conf");
 				$x = json_decode($y);	
 			}
-			$this->patch_connection();
+			self::$patch_connection();
 		}
-		array_splice($this->users, array_search($request['session'], $this->users), 1);
-		$this->update_queue();
+		array_splice(self::$users, array_search($request['session'], self::$users), 1);
+		self::update_queue();
 		return true;
 	}
 
 	//***
-	public function patch_connection() {
+	public static function patch_connection() {
 		global $request;
-		if (sizeof($this->users) > 0) {
-			$this->run_queue();
-			$this->files->save_user_log($request['session']);
-			$this->update_queue();
+		if (sizeof(self::$users) > 0) {
+			self::run_queue();
+			static_file::save_user_log($request['session']);
+			self::update_queue();
 		}
 		else {
-			$this->files->save_user_log($request['session']);
-			if ($this->users == null)
-				$this->users = [];
-			file_put_contents("users.conf", json_encode($this->users));		
+			static_file::save_user_log($request['session']);
+			if (self::$users == null)
+				self::$users = [];
+			file_put_contents("users.conf", json_encode(self::$users));		
 		}
 	}
 
 	//***
-	public function run_queue() {
+	public static function run_queue() {
 		global $request;
-		if ($this->files->find_user_queue($request['session']) != false)
-			$this->send_request();
+		if (static_file::find_user_queue($request['session']) != false)
+			self::send_request();
 	}
 
-	public function option_ssl($bool) {
-		$this->opt_ssl = "https://";
+	public static function option_ssl($bool) {
+		self::$opt_ssl = "https://";
 		if ($bool == false)
-			$this->opt_ssl = "http://";
+			self::$opt_ssl = "http://";
 		return $bool;
 	}
 
-	public function print_page() {
-		echo $this->page_contents;
+	public static function print_page() {
+		echo self::$page_contents;
 	}
 
 }

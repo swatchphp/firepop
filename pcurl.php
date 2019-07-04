@@ -4,14 +4,16 @@ require_once("abscurl.php");
 
 class curl extends Redist implements pCURL {
 
-	public function run() {
+	static $content_type;
+
+	public static function run() {
 
 		// begin
-		$this->ch = $this->create_multi_handler();
+		parent::$ch = self::create_multi_handler();
 		global $request;
 		// aggregate data
-		$this->sessions = parent::get_sessions($request);
-		foreach ($this->users as $value) {
+		parent::$sessions = purl::get_sessions($request);
+		foreach (purl::$users as $value) {
 			$user_vars = [];
 			$servers = null;
 			$token = null;
@@ -23,36 +25,36 @@ class curl extends Redist implements pCURL {
 				else if ($k == 'session')
 					$token = $v;
 			}
-			$this->handles[] = $this->prepare_curl_handle($servers, $user_vars, $token);
+			self::$handles[] = self::prepare_curl_handle($servers, $user_vars, $token);
 		}
 
 		// swarm!
-		$this->execute_multiple_curl_handles($this->handles);
+		self::execute_multiple_curl_handles(self::handles);
 		file_put_contents("users.conf", "");
 	}
 
 	// For curl operations
-	public function set_content_type($type) {
-		return $this->content_type = $type;
+	public static function set_content_type($type) {
+		return self::$content_type = $type;
 	}
 
-	public function create_multi_handler() {
-		return curl_multi_init();
+	public static function create_multi_handler() {
+		return self::curl_multi_init();
 	}
 
-	public function prepare_curl_handles($server, $fields, $token) {
+	public static function prepare_curl_handles($server, $fields, $token) {
 		   
 		$h = [];
 		if ($server == null)
 			return $h;
 
-		$h = $this->prepare_curl_handle($server, $fields, $token);
+		$h = self::prepare_curl_handle($server, $fields, $token);
 	   
 		return $h;
 	}
 
 	// This is where we translate our user files into the curl call
-	public function prepare_curl_handle($server_url, $fields, $token){
+	public static function prepare_curl_handle($server_url, $fields, $token){
 
 		$field = [];  
 		foreach ($fields as $k => $v)
@@ -73,21 +75,21 @@ class curl extends Redist implements pCURL {
 
 		$len = strlen(json_encode($field));
 		curl_setopt($handle, CURLOPT_HTTPHEADER, array(														  
-			'Content-Type' => $this->content_type,
+			'Content-Type' => self::$content_type,
 			'Content-Length' => $len
 			)
 		);
 
-		$this->page_contents = curl_exec($handle);
+		$page_contents = curl_exec($handle);
 		return $handle;
 	}
 
-	public function add_handles($curl_multi_handler, $handles) {
+	public static function add_handles($curl_multi_handler, $handles) {
 		foreach($handles as $handle)
 			curl_multi_add_handle($curl_multi_handler, $handle);
 	}
    
-	public function perform_multi_exec($curl_multi_handler) {
+	public static function perform_multi_exec($curl_multi_handler) {
    
 		do {
 			$mrc = curl_multi_exec($curl_multi_handler, $active);
@@ -102,7 +104,7 @@ class curl extends Redist implements pCURL {
 		}
 	}
 
-	public function perform_curl_close($curl_multi_handler, $handles) {
+	public static function perform_curl_close($curl_multi_handler, $handles) {
 	   
 			  // is this necessary
 		foreach($handles as $handle){
@@ -112,11 +114,11 @@ class curl extends Redist implements pCURL {
 		curl_multi_close($curl_multi_handler);
 	}
    
-	public function execute_multiple_curl_handles($handles) {
-		$curl_multi_handler = $this->create_multi_handler();
-		$this->add_handles($curl_multi_handler, $handles);
-		$this->perform_multiexec($curl_multi_handler);
-		$this->perform_curl_close($curl_multi_handler, $handles);
+	public static function execute_multiple_curl_handles($handles) {
+		$curl_multi_handler = self::create_multi_handler();
+		self::add_handles($curl_multi_handler, $handles);
+		self::perform_multiexec($curl_multi_handler);
+		self::perform_curl_close($curl_multi_handler, $handles);
 	}
   
 }

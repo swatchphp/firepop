@@ -28,51 +28,51 @@
 interface pUser {
 
 	// Validate incoming or outgoing address
-	public function spoof_check();
+	public static function spoof_check();
 	// Trace variable content
-	public function trace($var);
+	public static function trace($var);
 	// Return closest addresses for analysis
-	public function return_relatives($addr);
+	public static function return_relatives($addr);
 	// The only function completely necessary.
 	// Begins all transactions except for the
 	// cURL ones.
-	public function parse_call();
+	public static function parse_call();
 	// Dissolves duplicate calls, and 
-	// sends to patching if count($this->users) > 2000
+	// sends to patching if count(self::$users) > 2000
 	// in the queue
-	public function delay_connection();
+	public static function delay_connection();
 	// Validate their is a REQUEST in the query
 	// string
-	public function validate_request();
+	public static function validate_request();
 	// Create action to disperse earliest
 	// user connected to their desired destination
-	public function send_request();
+	public static function send_request();
 	// Checks spoofing, adds user to queue
 	// runs patch_connection
-	public function patch_connection();
+	public static function patch_connection();
 	// Check for valid incoming $host
-	public function match_server($host);
+	public static function match_server($host);
 	// Turn SSL flag on and off
-	public function option_ssl($bool);
+	public static function option_ssl($bool);
 	// pass query string and return &server=value
-	public function get_servers($request);
+	public static function get_servers($request);
 	// pass query string and return &session=value
-	public function get_sessions($request);
-	// count($this->users)
-	public function user_count();
+	public static function get_sessions($request);
+	// count(self::$users)
+	public static function user_count();
 	// Add user to the queue
-	public function update_queue();
+	public static function update_queue();
 	// Make info count of who has been
 	// going through the system. Images taken by IP block
-	public function disassemble_IP($host);
+	public static function disassemble_IP($host);
 	// Find out if a new ABC block has come in to the
 	// network.
-	public function make_relationships();
+	public static function make_relationships();
 	// Checks for new refering site
-	public function add_referer();
+	public static function add_referer();
 	// Checks refer history for max size
-	public function remove_referer();
+	public static function remove_referer();
 	// Returns users who have come from same ABC blocks
-	public function relative_count();
+	public static function relative_count();
 
 }

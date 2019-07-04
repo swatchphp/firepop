@@ -28,22 +28,22 @@
 interface pCurl {
 
 	// Set content type of redirects
-	public function set_content_type($content_type);
+	public static function set_content_type($content_type);
 	// Singularly call instances of prepare_curl_handle()
-	public function prepare_curl_handles($server_url, $fields, $token);
+	public static function prepare_curl_handles($server_url, $fields, $token);
 	// This is where we translate our user files into the curl call
-	public function prepare_curl_handle($server_url, $fields, $token);
+	public static function prepare_curl_handle($server_url, $fields, $token);
 	// Instantiate multi-cURL
-	public function perform_multi_exec($curl_multi_handler);
+	public static function perform_multi_exec($curl_multi_handler);
 	// Close off all cURL requests
-	public function perform_curl_close($curl_multi_handler, $handles);
+	public static function perform_curl_close($curl_multi_handler, $handles);
 	// Disperse SaaS function
-	public function execute_multiple_curl_handles($handles);
+	public static function execute_multiple_curl_handles($handles);
 	// Begin cURL actions
-	public function run();
+	public static function run();
 	// Returns curl_multi_init() object
-	public function create_multi_handler();
+	public static function create_multi_handler();
 	// Create multi cURL 
-	public function add_handles($curl_multi_handler, $handles);
+	public static function add_handles($curl_multi_handler, $handles);
 
 }
