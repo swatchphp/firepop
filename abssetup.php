@@ -34,17 +34,17 @@
 
 class pCon {
 
-	public $path_user;
-	public $path_server;
+	static $path_user;
+	static $path_server;
 
-	public function setup() {
+	public static function setup() {
 	// Default Directories and files for configuation in pUrl	//
-		$this->path_user = "user_logs/";			//
-		$this->path_server = "server_logs/";			//
-		if (!is_dir($this->path_user))				//
-			mkdir($this->path_user);			//
-		if (!is_dir($this->path_server))			//
-			mkdir($this->path_server);			//
+		self::$$path_user = "user_logs/";			//
+		self::$path_server = "server_logs/";			//
+		if (!is_dir(self::$path_user))				//
+			mkdir(self::$path_user);			//
+		if (!is_dir(self::$path_server))			//
+			mkdir(self::$path_server);			//
 		if (!file_exists("spoof_list"))				//
 			touch("spoof_list");				//
 		if (!file_exists("users.conf"))				//
