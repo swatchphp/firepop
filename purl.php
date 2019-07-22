@@ -251,7 +251,7 @@ class pURL extends Redist implements pUser {
 			self::option_ssl(true);
 		if (filter_var($host, FILTER_VALIDATE_URL) == false
 			&& ($check_addr_list = gethostbynamel($host)) == false) {
-			$spoof_list[] = $request['host'];
+			$spoof_list[] = parent::$request['host'];
 			$spoof_list = array_unique($spoof_list);
 			file_put_contents("spoof_list", $spoof_list);
 			return false;
@@ -261,15 +261,15 @@ class pURL extends Redist implements pUser {
 
 	// ***
 	public static function return_relatives($addr) {
-		global $request;
+	//	global $request;
 		static_file::get_user_log($addr);
 		$x = [];
 		foreach (self::$user as $key) {
 			if ($key != 'from_addr' || json_decode($key) == null)
 				continue;
-			if ($key->A == $request['from_addr']['A']
-				&& $key->B == $request['from_addr']['B']
-				&& $key->C == $request['from_addr']['C'])
+			if ($key->A == parent::$request['from_addr']['A']
+				&& $key->B == parent::$request['from_addr']['B']
+				&& $key->C == parent::$request['from_addr']['C'])
 				$x[] = $relationships;
 		}
 		return $x;
@@ -277,41 +277,40 @@ class pURL extends Redist implements pUser {
 
 	// ***
 	public static function delay_connection() {
-		global $request;
 		$x = [];
 		if (sizeof(self::$users) > 2000) {
 			if (self::relative_count() > 50) {
-				static_file::save_user_log($request['session']);
+				static_file::save_user_log(parent::$request['session']);
 				array_unique(self::$users);
 				file_put_contents("users.conf", json_encode(self::$users));
 				exit();
 			}
 		}
 		array_unique(self::$users);
-		if (self::$users[0] != $request['session']) {
+		if (self::$users[0] != parent::$request['session']) {
 			$y = file_get_contents("users.conf");
 			$x = json_decode($y);
-			while ($x[0] != $request['session'] && time() - self::$timer < 3000) {
+			while ($x[0] != parent::$request['session'] && time() - self::$timer < 3000) {
 				$y = file_get_contents("users.conf");
 				$x = json_decode($y);	
 			}
 			self::$patch_connection();
 		}
-		array_splice(self::$users, array_search($request['session'], self::$users), 1);
+		array_splice(self::$users, array_search(parent::$request['session'], self::$users), 1);
 		self::update_queue();
 		return true;
 	}
 
 	//***
 	public static function patch_connection() {
-		global $request;
+	//	global $request;
 		if (sizeof(self::$users) > 0) {
 			self::run_queue();
-			static_file::save_user_log($request['session']);
+			static_file::save_user_log(parent::$request['session']);
 			self::update_queue();
 		}
 		else {
-			static_file::save_user_log($request['session']);
+			static_file::save_user_log(parent::$request['session']);
 			if (self::$users == null)
 				self::$users = [];
 			file_put_contents("users.conf", json_encode(self::$users));		
@@ -320,8 +319,8 @@ class pURL extends Redist implements pUser {
 
 	//***
 	public static function run_queue() {
-		global $request;
-		if (static_file::find_user_queue($request['session']) != false)
+	//	global $request;
+		if (static_file::find_user_queue(parent::$request['session']) != false)
 			self::send_request();
 	}
 

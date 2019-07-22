@@ -65,8 +65,8 @@ class Redist {
 	public static function detail_scrape() {
 		global $request;
 		$search = [];
-		foreach (static_url::users as $value) {
-			if (!file_exists(static_file::path_user.$value) || filesize(static_file::path_user.$value) == 0 || $value == "." || $value == "..")
+		foreach (static_url::$users as $value) {
+			if (!file_exists(static_file::$path_user.$value) || filesize(static_file::$path_user.$value) == 0 || $value == "." || $value == "..")
 				continue;
 			static_file::get_user_log($value);
 			$x = 0;

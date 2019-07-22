@@ -39,7 +39,7 @@ class pCon {
 
 	public static function setup() {
 	// Default Directories and files for configuation in pUrl	//
-		self::$$path_user = "user_logs/";			//
+		self::$path_user = "user_logs/";			//
 		self::$path_server = "server_logs/";			//
 		if (!is_dir(self::$path_user))				//
 			mkdir(self::$path_user);			//

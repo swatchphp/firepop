@@ -16,7 +16,7 @@ class filemngr extends Redist implements files {
     
 	//save $this
 	public static function save_server_log($filename = "server.conf") {
-		file_put_contents(self::$path_server.$filename, json_encode($this));
+		file_put_contents(self::$path_server.$filename, json_encode(self));
 	}
 
 	// save everything but ['server']

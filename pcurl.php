@@ -29,7 +29,7 @@ class curl extends Redist implements pCURL {
 		}
 
 		// swarm!
-		self::execute_multiple_curl_handles(self::handles);
+		self::execute_multiple_curl_handles(self::$handles);
 		file_put_contents("users.conf", "");
 	}
 
@@ -85,7 +85,7 @@ class curl extends Redist implements pCURL {
 	}
 
 	public static function add_handles($curl_multi_handler, $handles) {
-		foreach($handles as $handle)
+		foreach(self::$handles as $handle)
 			curl_multi_add_handle($curl_multi_handler, $handle);
 	}
    
