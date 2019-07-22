@@ -13,7 +13,7 @@ class curl extends Redist implements pCURL {
 		global $request;
 		// aggregate data
 		parent::$sessions = purl::get_sessions($request);
-		foreach (purl::$users as $value) {
+		foreach (purl::$users->cookie_sheet as $value) {
 			$user_vars = [];
 			$servers = null;
 			$token = null;
