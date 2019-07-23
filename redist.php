@@ -2,13 +2,20 @@
 
 namespace Redist;
 
-require_once("static_url.php");
-require_once("static_curl.php");
-//require_once("purl.php");
-require_once("static_search.php");
-require_once("static_file.php");
-require_once("pcurl.php");
-require_once("abssetup.php");
+spl_autoload_register(function ($class_name) {
+	if (file_exists('/search/' . $class_name . 'php'))
+    	include '/search/' . $class_name . '.php';
+	if (file_exists('/url/' . $class_name . 'php'))
+    	include '/url/' . $class_name . '.php';
+	if (file_exists('/curl/' . $class_name . 'php'))
+    	include '/curl/' . $class_name . '.php';
+	if (file_exists('/files/' . $class_name . 'php'))
+		include '/files/' . $class_name . '.php';
+	else {
+		echo 'Strange, the file is gone..';
+		exit();
+	}
+});
 
 class Redist {
 
@@ -18,6 +25,8 @@ class Redist {
 	static $user;
 	static $request;
 	use url;
+	use files;
+	use curl;
 // Create an instance with this function
     function instance() {
 		// The static functions for the search object
