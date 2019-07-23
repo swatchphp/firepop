@@ -1,5 +1,6 @@
 <?php
 
+namespace Redist\files;
 require_once("pfiles.php");
 require_once("absfiles.php");
 

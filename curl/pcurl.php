@@ -1,5 +1,7 @@
 <?php 
 
+namespace Redist\curl;
+
 require_once("abscurl.php");
 
 class curl extends Redist implements pCURL {
@@ -9,10 +11,8 @@ class curl extends Redist implements pCURL {
 	public static function run() {
 
 		// begin
-		parent::$ch = self::create_multi_handler();
-		global $request;
+		$ch = self::create_multi_handler();
 		// aggregate data
-		parent::$sessions = purl::get_sessions($request);
 		foreach (purl::$users->cookie_sheet as $value) {
 			$user_vars = [];
 			$servers = null;

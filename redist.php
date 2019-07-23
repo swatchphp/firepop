@@ -1,5 +1,7 @@
 <?php
 
+namespace Redist;
+
 require_once("static_url.php");
 require_once("static_curl.php");
 //require_once("purl.php");
@@ -15,44 +17,44 @@ class Redist {
 	static $search;
 	static $user;
 	static $request;
-	function __construct() {
-		$temp = new pCon();
-	}
-
+	use url;
+// Create an instance with this function
     function instance() {
-		/*
-        self::url = new static_url();
-        self::search = new static_search();
-        self::files = new static_file();
-		self::curl = new static_curls();
-		*/
-		static_url::create();
+		// The static functions for the search object
+		// are in abssearch.php
+			self::$search = new url\user_search();
+		// The static functions for the file_class object
+		// are in absfiles.php
+			self::$files = new files\filemngr();
+		// The static functions for the cURL object
+		// are in abscurl.php
+			self::$curl = new curl();
+		url\static_url::create();
 		self::parse_call();
     }
 
-	// This is the only call you need
+	// Everything Begins Here
 	// ***
 	public static function parse_call() {
-		static_url::spoof_check();
-		static_url::add_referer();
-		static_url::get_servers(self::$request);
-		if (count($request) == 4)
+		url\static_url::spoof_check();
+		url\static_url::add_referer();
+		url\static_url::get_servers(self::$request);
+		if (count(self::$request) == 4)
 			exit();
-		if (!static_url::match_server(self::$request['cookie_sheet']['user_addr'])) {
+		if (!url\static_url::match_server(self::$request['cookie_sheet']['user_addr'])) {
 			echo "Fatal Error: Your address is unknown";
 			exit();
 		}
-		else if (!static_url::match_server(static_url::$servers)) {
+		else if (!url\static_url::match_server(url\static_url::$servers)) {
 			echo "Fatal Error: Target address unknown";
 			exit();
 		}
 
 		$host = self::$request['cookie_sheet']['user_addr'];
-		//static_url::disassemble_IP($host);
-		static_url::disassemble_IP($host);
-		static_file::get_user_queue();
-		static_url::get_sessions($request);
-		static_url::patch_connection();
+		url\static_url::disassemble_IP($host);
+		files\static_files::get_user_queue();
+		url\static_url::get_sessions(self::$request);
+		url\static_url::patch_connection();
 
 	}
 
@@ -63,24 +65,24 @@ class Redist {
 	// compared to self::$percent_diff
 	public static function detail_scrape() {
 		$search = [];
-		foreach (static_url::$users->cookie_sheet as $value) {
-			if (!file_exists(static_file::$path_user.$value) || filesize(static_file::$path_user.$value) == 0 || $value == "." || $value == "..")
+		foreach (url\static_url::$users->cookie_sheet as $value) {
+			if (!file_exists(files\static_files::$path_user.$value) || filesize(files\static_files::$path_user.$value) == 0 || $value == "." || $value == "..")
 				continue;
-			static_file::get_user_log($value);
+			files\static_files::get_user_log($value);
 			$x = 0;
-			$y = sizeof((array)static_url::$user) + sizeof((array)static_url::$user->cookie_sheet->refer_by) + sizeof((array)static_url::$user->cookie_sheet->from_addr);
-			foreach ($request as $k=>$v) {
+			$y = sizeof((array)url\static_url::$user) + sizeof((array)url\static_url::$user->cookie_sheet->refer_by) + sizeof((array)url\static_url::$user->cookie_sheet->from_addr);
+			foreach (parent::$request as $k=>$v) {
                 if($k == 'from_addr') {
-					if (sizeof(array_intersect($k, (array)static_url::$user->cookie_sheet->$k)) > 2)
+					if (sizeof(array_intersect($k, (array)url\static_url::$user->cookie_sheet->$k)) > 2)
                         $x += 1;
                 }
 				else if (is_array($k) || is_object($k))
-					$x += sizeof(array_intersect($v, (array)static_url::$user->cookie_sheet->$k));
-				else if ($request['cookie_sheet'][$k] == static_url::$user->cookie_sheet->$k && $x++)
+					$x += sizeof(array_intersect($v, (array)url\static_url::$user->cookie_sheet->$k));
+				else if (parent::$request['cookie_sheet'][$k] == url\static_url::$user->cookie_sheet->$k && $x++)
 					continue;
 			}
-			if ($x/$y > static_url::$percent_diff)
-				$search[] = array($x => static_url::$user->cookie_sheet->session);
+			if ($x/$y > url\static_url::$percent_diff)
+				$search[] = array($x => url\static_url::$user->cookie_sheet->session);
 		}
 		return $search;
 	}

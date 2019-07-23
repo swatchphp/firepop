@@ -1,5 +1,6 @@
 <?php
 
+namespace Redist\url;
 require_once("absurl.php");
 require_once("purl.php");
 
@@ -13,14 +14,13 @@ class static_url extends purl implements pUser {
         return parent::trace($var);
     }
 
-	public static function get_servers($request) {
-		global $request;
-        return parent::get_servers($request);
+	public static function get_servers() {
+        return parent::get_servers();
     }
 
-	public static function get_sessions($request) {
-		global $request;
-        return parent::get_sessions($request);
+	public static function get_sessions() {
+
+        return parent::get_sessions();
     }
 
 	public static function user_count() {

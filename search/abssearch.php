@@ -1,5 +1,7 @@
 <?php
 
+namespace Redist\search;
+
 interface search {
 
 	// look for user first in, amongst the

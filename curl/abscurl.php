@@ -25,6 +25,9 @@
  *  functionality in the full file, purl.php
  * 
 */
+
+namespace Redist\curl;
+
 interface pCurl {
 
 	// Set content type of redirects

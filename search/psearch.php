@@ -1,4 +1,6 @@
 <?php
+
+namespace Redist\search;
 require_once("abssearch.php");
 require_once("pfiles.php");
 require_once("abssetup.php");
@@ -42,8 +44,7 @@ class user_search extends Redist implements search {
 	// files that are in "users.conf"
 	public static function find_user_queue($token) {
 		$search = [];
-		global $request;
-		$y = sizeof($request);
+		$y = sizeof(parent::$request);
 		$search = parent::detail_scrape();
 		if ($search != null)
 			return $search;

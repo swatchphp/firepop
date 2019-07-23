@@ -1,5 +1,7 @@
 <?php
 
+namespace Redist\files;
+
 require_once("absfiles.php");
 
 class filemngr extends Redist implements files {
@@ -16,13 +18,12 @@ class filemngr extends Redist implements files {
     
 	//save $this
 	public static function save_server_log($filename = "server.conf") {
-		file_put_contents(self::$path_server.$filename, json_encode($this));
+		file_put_contents(self::$path_server.$filename, json_encode(self));
 	}
 
 	// save everything but ['server']
 	public static function save_user_log($filename) {
-		global $request;
-		file_put_contents(self::$path_user.$filename, json_encode($request));			
+		file_put_contents(self::$path_user.$filename, json_encode(parent::$request));			
 	}
 
 	// load everything

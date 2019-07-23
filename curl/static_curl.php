@@ -1,4 +1,7 @@
 <?php
+
+namespace Redist\curl;
+
 include_once("abscurl.php");
 include_once("pcurl.php");
 

@@ -25,6 +25,8 @@
  *  entire purl.php script.
  * 
 */
+
+namespace Redist\pUser;
 interface pUser {
 
 	// Validate incoming or outgoing address

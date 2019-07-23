@@ -1,5 +1,6 @@
 <?php
 
+namespace Redist\search;
 class static_search extends user_search implements search {
     
 	public static function find_user_first($token) {
