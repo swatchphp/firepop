@@ -2,7 +2,7 @@
 
 namespace Redist\search;
 
-interface search {
+interface search_ab {
 
 	// look for user first in, amongst the
 	// files that are in self::path_user (krsort[0])

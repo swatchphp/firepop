@@ -1,4 +1,5 @@
 <?php
+
 file_put_contents("example.txt",":):):):)");
 echo "<script src=\"routes/pipes.js\"></script>";
 echo "<span id=\"hed\" style=\"width:100%\"><br>";

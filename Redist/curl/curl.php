@@ -2,22 +2,10 @@
 
 namespace Redist\curl;
 
-spl_autoload_register(function ($class_name) {
-	if (file_exists('/search/' . $class_name . 'php'))
-    	include '/search/' . $class_name . '.php';
-	if (file_exists('/url/' . $class_name . 'php'))
-    	include '/url/' . $class_name . '.php';
-	if (file_exists('/curl/' . $class_name . 'php'))
-    	include '/curl/' . $class_name . '.php';
-	if (file_exists('/files/' . $class_name . 'php'))
-		include '/files/' . $class_name . '.php';
-	else {
-		echo 'Strange, the file is gone..';
-		exit();
-	}
-});
+include 'pcurls.php';
+include 'static_curls.php';
 
-class curl extends Redist implements pCURL {
+class curl extends Redist implements pCURLs {
 
 	static $content_type;
 

@@ -1,5 +1,6 @@
 <?php
 namespace Redist\files;
+
 interface files {
 	
 	// same as self::save_user_log()

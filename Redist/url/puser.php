@@ -26,7 +26,8 @@
  * 
 */
 
-namespace Redist\pUser;
+namespace Redist\url;
+
 interface pUser {
 
 	// Validate incoming or outgoing address
@@ -53,13 +54,15 @@ interface pUser {
 	// runs patch_connection
 	public static function patch_connection();
 	// Check for valid incoming $host
-	public static function match_server($host);
+	public static function match_remote_server();
+	// Check for valid outgoing $host
+	public static function match_target_server();
 	// Turn SSL flag on and off
 	public static function option_ssl($bool);
 	// pass query string and return &server=value
-	public static function get_servers($request);
+	public static function get_servers();
 	// pass query string and return &session=value
-	public static function get_sessions($request);
+	public static function get_sessions();
 	// count(self::$users)
 	public static function user_count();
 	// Add user to the queue
@@ -71,7 +74,7 @@ interface pUser {
 	// network.
 	public static function make_relationships();
 	// Checks for new refering site
-	public static function add_referer();
+//	public static function add_referer();
 	// Checks refer history for max size
 	public static function remove_referer();
 	// Returns users who have come from same ABC blocks

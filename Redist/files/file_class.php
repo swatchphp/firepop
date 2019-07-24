@@ -2,22 +2,18 @@
 
 namespace Redist\files;
 
-spl_autoload_register(function ($class_name) {
-	if (file_exists('/search/' . $class_name . 'php'))
-    	include '/search/' . $class_name . '.php';
-	if (file_exists('/url/' . $class_name . 'php'))
-    	include '/url/' . $class_name . '.php';
-	if (file_exists('/curl/' . $class_name . 'php'))
-    	include '/curl/' . $class_name . '.php';
-	if (file_exists('/files/' . $class_name . 'php'))
-		include '/files/' . $class_name . '.php';
-	else {
-		echo 'Strange, the file is gone..';
-		exit();
-	}
-});
+require_once 'files.php';
+require_once 'filemngr.php';
 
-class filemngr extends Redist implements files {
+class file_class implements files {
+
+	static $path_user;
+	static $path_server;
+
+	function __construct() {
+		self::$path_user = '/';
+		self::$path_server = '/';
+	}
 	
 	// duplicate of save_user_log
 	public static function update_user($token) {
@@ -58,7 +54,7 @@ class filemngr extends Redist implements files {
 		$dim = file_get_contents($filename);
 		$users = json_decode($dim);
 		$files = scandir(self::$path_user);
-		if (sizeof((array)$files) > 0)
+		if (sizeof((array)$users) > 0)
 			self::$users = array_intersect($users, (array)$files);
 	}
 

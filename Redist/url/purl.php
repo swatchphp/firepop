@@ -2,22 +2,10 @@
 
 namespace Redist\url;
 
-spl_autoload_register(function ($class_name) {
-	if (file_exists('/search/' . $class_name . 'php'))
-    	include '/search/' . $class_name . '.php';
-	if (file_exists('/url/' . $class_name . 'php'))
-    	include '/url/' . $class_name . '.php';
-	if (file_exists('/curl/' . $class_name . 'php'))
-    	include '/curl/' . $class_name . '.php';
-	if (file_exists('/files/' . $class_name . 'php'))
-		include '/files/' . $class_name . '.php';
-	else {
-		echo 'Strange, the file is gone..';
-		exit();
-	}
-});
+include 'puser.php';
+include 'static_url.php';
 
-class pURL extends Redist implements pUser {
+class pURL implements pUser {
 
 	static $ch;
 	static $user;
@@ -44,21 +32,29 @@ class pURL extends Redist implements pUser {
 	static $max_history;
 	static $content_type;
 	static $timer;
-
+	static $request;
+	static $files;
+	
 	public static function create() {
+		self::$files = new \Redist\files\filemngr();
+		self::$request = array();
+
+		self::$request['cookie_sheet'] = array();
 	// Get query string in either GET or POST
-		parent::$request['cookie_sheet'] = ($_SERVER['REQUEST_METHOD'] == "GET") ? ($_GET) : ($_POST);
+		self::$request['cookie_sheet']['METHOD'] = ($_SERVER['REQUEST_METHOD'] == "GET") ? ($_GET) : ($_POST);
 	// Get incoming address for relations to other IP class visitors
-		parent::$request['cookie_sheet']['user_addr']['root'] = $_SERVER['REMOTE_ADDR'];
+		self::$request['cookie_sheet']['user_addr'] = $_SERVER['REMOTE_ADDR'];
 	// Let's setup the Cookie Sheets so each address is accommodated for
-		if (isset($_COOKIE) && count($_COOKIE) > 0)
-			parent::$request['cookie_sheet']['cookies'] = $_COOKIE;
-		else
-			parent::$request['cookie_sheet']['cookies'] = [];
+		if (isset($_COOKIE) && count($_COOKIE) > 0
+			&& isset(self::$request['cookie_sheet']['METHOD']['target_pg'])
+			&& isset($_COOKIE))
+			self::$request['cookie_sheet']['cookies'][self::$request['cookie_sheet']['METHOD']['target_pg']] = $_COOKIE;
+		else if (!isset(self::$request->cookie_sheet->METHOD->target_pg))
+			self::$request['cookie_sheet']['cookies']['self'] = 'localhost';
 	// There are a couple things we use in pUrl to look at our users //
-		parent::$request['cookie_sheet']['refer_by'] = [];		//
-		parent::$request['cookie_sheet']['relative'] = [];	//
-		self::add_referer();			//
+		self::$request['cookie_sheet']['refer_by'][] = $_SERVER['HTTP_REFERER'];
+		self::$request['cookie_sheet']['relative'] = [];	//
+		self::add_referer();
 	// This is for listing all users in the queue
 		self::$users = [];
 	// Default is to turn off HTTPS:// but the program figures it out itself
@@ -81,18 +77,18 @@ class pURL extends Redist implements pUser {
 
 	// input the query string
 	public static function get_servers() {
-		if (!isset(parent::$request['cookie_sheet']['server']))
+		if (!isset(self::$request['cookie_sheet']['server']))
 			return null;
-		self::$servers = parent::$request['cookie_sheet']['server'];
-		return parent::$request['cookie_sheet']['server'];
+		self::$servers = self::$request['cookie_sheet']['server'];
+		return self::$request['cookie_sheet']['server'];
 	}
 
 	// input the query string
-	public static function get_sessions(){
+	public static function get_sessions() {
 		
-		if (!isset(parent::$request['cookie_sheet']['session']))
+		if (!isset(self::$request['cookie_sheet']['session']))
 			return null;
-		return parent::$request['cookie_sheet']['session'];
+		return self::$request['cookie_sheet']['session'];
 	}
 
 	// return the number of users present
@@ -107,16 +103,16 @@ class pURL extends Redist implements pUser {
 	// make sure there was a request
 	public static function validate_request() {
 		
-		if (parent::$request != null && sizeof(parent::$request) != 1)
+		if (self::$request != null && sizeof(self::$request) != 1)
 			return true;
 		return false;
 	}
 
 	public static function send_request() {
-		if (files\static_files::find_user_queue(self::$users[0]) == false)
+		if (self::$files->find_user_queue(self::$users[0]) == false)
 			return false;
 		$req = [];
-		files\static_files::get_user_log(self::$users[0]);
+		self::$files->get_user_log(self::$users[0]);
 		$options = array(
 		  'http' => array(
 			'header'  => array("Content-type: self::content_type"),
@@ -135,7 +131,7 @@ class pURL extends Redist implements pUser {
 
 	public static function update_queue() {
 		
-		self::update_user(parent::$request['cookie_sheet']['session']);
+		self::update_user(self::$request['cookie_sheet']['session']);
 		file_put_contents("users.conf", json_encode(self::$users));
 	}
 
@@ -151,11 +147,11 @@ class pURL extends Redist implements pUser {
 		$ipv4 = gethostbyname($output);
 		preg_match_all("/(\d{1,3}|\.{0})/", $ipv4, $ip_pieces);
 		$ip_pieces = $ip_pieces[0];
-		parent::$request['cookie_sheet']['from_addr'] = [];
-		parent::$request['cookie_sheet']['from_addr']['A'] = $ip_pieces[0];
-		parent::$request['cookie_sheet']['from_addr']['B'] = $ip_pieces[1];
-		parent::$request['cookie_sheet']['from_addr']['C'] = $ip_pieces[2];
-		parent::$request['cookie_sheet']['from_addr']['D'] = $ip_pieces[3];
+		self::$request['cookie_sheet']['from_addr'] = [];
+		self::$request['cookie_sheet']['from_addr']['A'] = $ip_pieces[0];
+		self::$request['cookie_sheet']['from_addr']['B'] = $ip_pieces[1];
+		self::$request['cookie_sheet']['from_addr']['C'] = $ip_pieces[2];
+		self::$request['cookie_sheet']['from_addr']['D'] = $ip_pieces[3];
 		self::make_relationships();
 	}
 
@@ -163,31 +159,35 @@ class pURL extends Redist implements pUser {
 		
 		$new_relations = [];
 		foreach (self::$users->cookie_sheet as $k => $v1) {
-			if ($v1 != "from_addr" || $v1->cookie_sheet->session == parent::$request['cookie_sheet']['session'])
+			if ($v1 != "from_addr" || $v1->cookie_sheet->session == self::$request['cookie_sheet']['session'])
 				continue;
-			if (parent::$request['cookie_sheet']['from_addr']['A'] == $v1->cookie_sheet->A && parent::$request['cookie_sheet']['from_addr']['B'] == $v1->cookie_sheet->B &&
-				parent::$request['cookie_sheet']['from_addr']['C'] == $v1->cookie_sheet->C)
+			if (self::$request['cookie_sheet']['from_addr']['A'] == $v1->cookie_sheet->A && self::$request['cookie_sheet']['from_addr']['B'] == $v1->cookie_sheet->B &&
+				self::$request['cookie_sheet']['from_addr']['C'] == $v1->cookie_sheet->C)
 				$new_relations[] = $v->cookie_sheet->session;
 		}
 		$unique = array_unique($new_relations);
-		parent::$request['cookie_sheet']['relative'] = $new_relations;
+		self::$request['cookie_sheet']['relative'] = $new_relations;
 	}
 
 	public static function add_referer () {
 		
-		if (isset($_SERVER['HTTP_REFERER']))
-			parent::$request['cookie_sheet']['refer_by'][] = $_SERVER['HTTP_REFERER'];
+		if (isset(self::$request['cookie_sheet']['cookies'][self::$request['cookie_sheet']['METHOD']['target_pg']]) && isset($_SERVER['HTTP_REFERER']))
+			self::$request['cookie_sheet']['cookies'][self::$request['cookie_sheet']['METHOD']['target_pg']] = $_SERVER['HTTP_REFERER'];
+		else if (isset(self::$request['cookie_sheet']['cookies']['self']) && self::$request['cookie_sheet']['cookies']['self'] >= 0)
+			self::$request['cookie_sheet']['cookies']['self'] += 1;
 		else
-			parent::$request['cookie_sheet']['refer_by'][] = "local";
+			self::$request['cookie_sheet']['cookies']['self'] = 0;
 		self::remove_referer();
 		return true;
 	}
 
 	public static function remove_referer() {
 		
-		if (sizeof(parent::$request['cookie_sheet']['refer_by']) == self::$max_history)
-			array_shift(parent::$request['cookie_sheet']['refer_by']);
-		return sizeof(parent::$request['cookie_sheet']['refer_by']);
+		if (isset(self::$request['cookie_sheet']['refer_by']) && sizeof(self::$request['cookie_sheet']['refer_by']) == self::$max_history)
+			array_shift(self::$request['cookie_sheet']['refer_by']);
+		else
+			return 0;
+		return sizeof(self::$request['cookie_sheet']['refer_by']);
 	}
 
 	//***
@@ -209,21 +209,21 @@ class pURL extends Redist implements pUser {
 	public static function parse_call() {
 		
 		self::spoof_check();
-		if (count(parent::$request) == 4)
+		if (count(self::$request) == 4)
 			exit();
-		if (!self::match_server(parent::$request['cookie_sheet']['user_addr'])) {
+		if (!self::match_server()) {
 			echo "Fatal Error: Your address is unknown";
 			exit();
 		}
-		else if (!self::match_server(parent::$request['cookie_sheet']['server'])) {
+		else if (!self::match_server()) {
 			echo "Fatal Error: Target address unknown";
 			exit();
 		}
 		
-		$host = parent::$request['cookie_sheet']['user_addr'];
+		$host = self::$request['cookie_sheet']['user_addr'];
 		self::disassemble_IP($host);
-		files\static_files::get_user_queue();
-		self::$users[] = parent::$request['cookie_sheet']['session'];
+		self::$files->get_user_queue();
+		self::$users[] = self::$request['cookie_sheet']['session'];
 		self::patch_connection();
 	}
 
@@ -237,13 +237,17 @@ class pURL extends Redist implements pUser {
 		$spoof_list = json_decode($pre_spoof_filter);
 		if ($spoof_list == null)
 			return true;
-		if (in_array(parent::$request['cookie_sheet']['user_addr'],$spoof_list))
+		if (in_array(self::$request['cookie_sheet']['user_addr'],$spoof_list))
 			exit();
 	}
 
 	//***
-	public static function match_server($host) {
-		
+	public static function match_remote_server() {
+		if (isset(self::$request['cookie_sheet']['user_addr']))
+			$host = self::$request['cookie_sheet']['user_addr'];
+		else
+			return false;
+
 		$trim = "";
 		if ($host == "::1" || str_replace("localhost","",$host) == true)
 			return true;
@@ -253,7 +257,26 @@ class pURL extends Redist implements pUser {
 			self::option_ssl(true);
 		if (filter_var($host, FILTER_VALIDATE_URL) == false
 			&& ($check_addr_list = gethostbynamel($host)) == false) {
-			$spoof_list[] = parent::$request['cookie_sheet']['user_addr'];
+			$spoof_list[] = self::$request['cookie_sheet']['user_addr'];
+			$spoof_list = array_unique($spoof_list);
+			file_put_contents("spoof_list", $spoof_list);
+			return false;
+		}
+		return true;
+	}
+
+	//***
+	public static function match_target_server() {
+		$trim = "";
+		if ($host == "::1" || str_replace("localhost","",$host) == true)
+			return true;
+		if (($trim = str_replace("http://","",$host) == true))
+			self::option_ssl(false);
+		else if (($trim = str_replace("https://","",$host) == true))
+			self::option_ssl(true);
+		if (filter_var($host, FILTER_VALIDATE_URL) == false
+			&& ($check_addr_list = gethostbynamel($host)) == false) {
+			$spoof_list[] = self::$request['cookie_sheet']['user_addr'];
 			$spoof_list = array_unique($spoof_list);
 			file_put_contents("spoof_list", $spoof_list);
 			return false;
@@ -264,14 +287,14 @@ class pURL extends Redist implements pUser {
 	// ***
 	public static function return_relatives($addr) {
 		
-		files\static_files::get_user_log($addr);
+		self::$files->get_user_log($addr);
 		$x = [];
 		foreach (self::$user->cookie_sheet as $key) {
 			if ($key != 'from_addr' || json_decode($key) == null)
 				continue;
-			if ($key->A == parent::$request['cookie_sheet']['from_addr']['A']
-				&& $key->B == parent::$request['cookie_sheet']['from_addr']['B']
-				&& $key->C == parent::$request['cookie_sheet']['from_addr']['C'])
+			if ($key->A == self::$request['cookie_sheet']['from_addr']['A']
+				&& $key->B == self::$request['cookie_sheet']['from_addr']['B']
+				&& $key->C == self::$request['cookie_sheet']['from_addr']['C'])
 				$x[] = $relationships;
 		}
 		return $x;
@@ -283,23 +306,23 @@ class pURL extends Redist implements pUser {
 		$x = [];
 		if (sizeof(self::$users) > 2000) {
 			if (self::relative_count() > 50) {
-				files\static_files::save_user_log(parent::$request['cookie_sheet']['session']);
+				self::$files->save_user_log(self::$request['cookie_sheet']['session']);
 				array_unique(self::$users);
 				file_put_contents("users.conf", json_encode(self::$users));
 				exit();
 			}
 		}
 		array_unique(self::$users);
-		if (self::$users[0] != parent::$request['cookie_sheet']['session']) {
+		if (self::$users[0] != self::$request['cookie_sheet']['session']) {
 			$y = file_get_contents("users.conf");
 			$x = json_decode($y);
-			while ($x[0] != parent::$request['cookie_sheet']['session'] && time() - self::$timer < 3000) {
+			while ($x[0] != self::$request['cookie_sheet']['session'] && time() - self::$timer < 3000) {
 				$y = file_get_contents("users.conf");
 				$x = json_decode($y);	
 			}
 			self::$patch_connection();
 		}
-		array_splice(self::$users, array_search(parent::$request['cookie_sheet']['session'], self::$users), 1);
+		array_splice(self::$users, array_search(self::$request['cookie_sheet']['session'], self::$users), 1);
 		self::update_queue();
 		return true;
 	}
@@ -309,11 +332,11 @@ class pURL extends Redist implements pUser {
 		
 		if (sizeof(self::$users) > 0) {
 			self::run_queue();
-			files\static_files::save_user_log(parent::$request['cookie_sheet']['session']);
+			self::$files->save_user_log(self::$request['cookie_sheet']['session']);
 			self::update_queue();
 		}
 		else {
-			files\static_files::save_user_log(parent::$request['cookie_sheet']['session']);
+			self::$files->save_user_log(self::$request['cookie_sheet']['session']);
 			if (self::$users == null)
 				self::$users = [];
 			file_put_contents("users.conf", json_encode(self::$users));		
@@ -323,7 +346,7 @@ class pURL extends Redist implements pUser {
 	//***
 	public static function run_queue() {
 		
-		if (files\static_files::find_user_queue(parent::$request['cookie_sheet']['session']) != false)
+		if (self::$files->find_user_queue(self::$request['cookie_sheet']['session']) != false)
 			self::send_request();
 	}
 

@@ -2,22 +2,10 @@
 
 namespace Redist\url;
 
-spl_autoload_register(function ($class_name) {
-	if (file_exists('/search/' . $class_name . 'php'))
-    	include '/search/' . $class_name . '.php';
-	if (file_exists('/url/' . $class_name . 'php'))
-    	include '/url/' . $class_name . '.php';
-	if (file_exists('/curl/' . $class_name . 'php'))
-    	include '/curl/' . $class_name . '.php';
-	if (file_exists('/files/' . $class_name . 'php'))
-		include '/files/' . $class_name . '.php';
-	else {
-		echo 'Strange, the file is gone..';
-		exit();
-	}
-});
+require_once 'purl.php';
+require_once 'puser.php';
 
-class static_url extends purl implements pUser {
+class static_url implements pUser {
 
     public static function create() {
         return parent::create();
@@ -80,8 +68,12 @@ class static_url extends purl implements pUser {
         return parent::spoof_check();
     }
     
-	public static function match_server($host) {
-        return parent::match_server($host);
+	public static function match_remote_server() {
+        return parent::match_remote_server();
+    } 
+    
+	public static function match_target_server() {
+        return parent::match_target_server();
     } 
     
 	public static function return_relatives($addr) {

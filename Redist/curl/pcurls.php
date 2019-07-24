@@ -28,7 +28,10 @@
 
 namespace Redist\curl;
 
-interface pCurl {
+include 'curl.php';
+include 'static_curls.php';
+
+interface pCurls {
 
 	// Set content type of redirects
 	public static function set_content_type($content_type);

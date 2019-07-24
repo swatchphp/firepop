@@ -2,22 +2,10 @@
 
 namespace Redist\search;
 
-spl_autoload_register(function ($class_name) {
-	if (file_exists('/search/' . $class_name . 'php'))
-    	include '/search/' . $class_name . '.php';
-	if (file_exists('/url/' . $class_name . 'php'))
-    	include '/url/' . $class_name . '.php';
-	if (file_exists('/curl/' . $class_name . 'php'))
-    	include '/curl/' . $class_name . '.php';
-	if (file_exists('/files/' . $class_name . 'php'))
-		include '/files/' . $class_name . '.php';
-	else {
-		echo 'Strange, the file is gone..';
-		exit();
-	}
-});
+include 'search.php';
+include 'search_ab.php';
 
-class user_search extends Redist implements search {
+class search_methods extends Redist implements search_ab {
 
 	// look for an email address amongst the
 	// files that are in self::path_user
