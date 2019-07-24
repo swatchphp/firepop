@@ -51,10 +51,14 @@ class pURL implements pUser {
 
 	// Get query string in either GET or POST
 		if (isset($_SERVER['HTTP_REFERER']))
-			self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']] = ($_SERVER['REQUEST_METHOD'] == "GET") ? ($_GET) : ($_POST);
-		else
-			self::$request['cookie_sheet']['no_refer'] = ($_SERVER['REQUEST_METHOD'] == "GET") ? ($_GET) : ($_POST);
-
+			self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['data'] = ($_SERVER['REQUEST_METHOD'] == "GET") ? ($_GET) : ($_POST);
+		else {
+			self::$request['cookie_sheet']['direct']['data'] = ($_SERVER['REQUEST_METHOD'] == "GET") ? ($_GET) : ($_POST);
+			if (isset(self::$request['cookie_sheet']['direct']['self']) && is_int(self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['self']))
+				self::$request['cookie_sheet']['direct']['self'] += 1;
+			else
+				self::$request['cookie_sheet']['direct']['self'] = 1;
+		}
 	// Get incoming address for relations to other IP class visitors
 		self::$request['cookie_sheet']['user_addr'] = $_SERVER['REMOTE_ADDR'];
 	// Let's setup the Cookie Sheets so each address is accommodated for
@@ -62,7 +66,7 @@ class pURL implements pUser {
 			&& isset($_SERVER['HTTP_REFERER'])
 			&& isset(self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['target_pg'])
 			&& isset($_COOKIE))
-			self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['target_pg'] = $_COOKIE;
+			self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['cookies'] = $_COOKIE;
 		else if (isset($_SERVER['HTTP_REFERER']) && !isset(self::$request->cookie_sheet->$_SERVER['HTTP_REFERER']->target_pg))
 			self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['self'] = 'localhost';
 	// There are a couple things we use in pUrl to look at our users //
@@ -362,9 +366,9 @@ class pURL implements pUser {
 			file_put_contents(self::$setup->path_server . "/users.conf", json_encode(self::$users));		
 		}
 		if (isset($_SERVER['HTTP_REFERER']))
-			header('Location: ' . self::$opt_ssl . self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['target_pg']);
+			header('Location: ' . self::$opt_ssl . self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['data']['target_pg']);
 		else
-			header('Location: ' . self::$opt_ssl . self::$request['cookie_sheet']['no_refer']['target_pg']);
+			header('Location: ' . self::$opt_ssl . self::$request['cookie_sheet']['direct']['data']['target_pg']);
 
 	}
 
