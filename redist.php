@@ -39,6 +39,7 @@ class Redist {
 	// Everything Begins Here
 	// ***
 	public static function parse_call() {
+		/*
 		self::$url->spoof_check();
 		
 		self::$url->get_servers();
@@ -49,14 +50,19 @@ class Redist {
 			echo "Fatal Error: Your address is unknown";
 			exit();
 		}
-		else if (isset(self::$url->request->METHOD->target_pg) && !self::$url->match_target_server(self::$url->request->METHOD->target_pg)) {
+		else if (isset(self::$url->request['METHOD']['target_pg']) && !self::$url->match_target_server(self::$url->opt_ssl . self::$url->request['METHOD']['target_pg'])) {
 			echo "Fatal Error: Target address unknown";
 			exit();
 		}
-		else {
-			echo 'No target address';
+		else if (isset(self::$url->request['METHOD']['target_pg'])) {
 		}
-
+		else if (!isset(self::$url->request['METHOD']['target_pg'])) {
+			echo self::$url->request['METHOD']['target_pg'];
+			echo 'No target address';
+			exit();
+		}
+		*/
+		self::$url->check_addr();
 		$host = $_SERVER['REMOTE_ADDR'];
 		self::$url->disassemble_IP($host);
 		

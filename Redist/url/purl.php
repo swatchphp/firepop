@@ -269,6 +269,7 @@ class pURL implements pUser {
 
 	//***
 	public static function match_target_server() {
+		$host = self::$request['cookie_sheet']['METHOD']['target_pg'];
 		$trim = "";
 		if ($host == "::1" || str_replace("localhost","",$host) == true)
 			return true;
@@ -350,8 +351,32 @@ class pURL implements pUser {
 				self::$users = [];
 			file_put_contents("users.conf", json_encode(self::$users));		
 		}
+		header('Location: ' . self::$opt_ssl . self::$request['cookie_sheet']['METHOD']['target_pg']);
 	}
 
+	public static function check_addr() {
+		
+		self::spoof_check();
+		
+		self::get_servers();
+		
+		if (isset($request) && sizeof(self::$request) == 4)
+			exit();
+		if (!self::match_remote_server()) {
+			echo "Fatal Error: Your address is unknown";
+			exit();
+		}
+		else if (isset(self::$request['cookie_sheet']['METHOD']['target_pg']) && !self::match_target_server(self::$opt_ssl . self::$request['cookie_sheet']['METHOD']['target_pg'])) {
+			echo "Fatal Error: Target address unknown";
+			exit();
+		}
+		else if (!isset(self::$request['cookie_sheet']['METHOD']['target_pg'])) {
+			echo self::$request['cookie_sheet']['METHOD']['target_pg'];
+			echo 'No target address';
+			exit();
+		}
+		return true;
+	}
 	//***
 	public static function run_queue() {
 		
