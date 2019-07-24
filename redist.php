@@ -22,6 +22,7 @@ class Redist {
 
 // Create an instance with this function
     function instance() {
+		$setup = new \Redist\setup\pConfig();
 	// The static functions for the search object
 	// are in abssearch.phpc
 		self::$search = new \Redist\search\search();
@@ -39,30 +40,9 @@ class Redist {
 	// Everything Begins Here
 	// ***
 	public static function parse_call() {
-		/*
-		self::$url->spoof_check();
-		
-		self::$url->get_servers();
-		
-		if (isset($url->request) && sizeof(self::$url->request) == 4)
-			exit();
-		if (!self::$url->match_remote_server()) {
-			echo "Fatal Error: Your address is unknown";
-			exit();
-		}
-		else if (isset(self::$url->request['METHOD']['target_pg']) && !self::$url->match_target_server(self::$url->opt_ssl . self::$url->request['METHOD']['target_pg'])) {
-			echo "Fatal Error: Target address unknown";
-			exit();
-		}
-		else if (isset(self::$url->request['METHOD']['target_pg'])) {
-		}
-		else if (!isset(self::$url->request['METHOD']['target_pg'])) {
-			echo self::$url->request['METHOD']['target_pg'];
-			echo 'No target address';
-			exit();
-		}
-		*/
+
 		self::$url->check_addr();
+
 		$host = $_SERVER['REMOTE_ADDR'];
 		self::$url->disassemble_IP($host);
 		
@@ -82,19 +62,19 @@ class Redist {
 	public static function detail_scrape() {
 		$search = [];
 		foreach (self::$url->$users->cookie_sheet as $value) {
-			if (!file_exists(files\static_files::$path_user.$value) || filesize(files\static_files::$path_user.$value) == 0 || $value == "." || $value == "..")
+			if (!file_exists(self::$files->path_user.$value) || filesize(self::$files->path_user.$value) == 0 || $value == "." || $value == "..")
 				continue;
-			files\static_files::get_user_log($value);
+			self::$files->get_user_log($value);
 			$x = 0;
 			$y = sizeof((array)self::$url->$user) + sizeof((array)self::$url->$user->cookie_sheet->refer_by) + sizeof((array)self::$url->$user->cookie_sheet->from_addr);
-			foreach (parent::$request as $k=>$v) {
+			foreach ($request as $k=>$v) {
                 if($k == 'from_addr') {
 					if (sizeof(array_intersect($k, (array)self::$url->$user->cookie_sheet->$k)) > 2)
                         $x += 1;
                 }
 				else if (is_array($k) || is_object($k))
 					$x += sizeof(array_intersect($v, (array)self::$url->$user->cookie_sheet->$k));
-				else if (parent::$request['cookie_sheet'][$k] == self::$url->$user->cookie_sheet->$k && $x++)
+				else if ($request['cookie_sheet'][$k] == self::$url->$user->cookie_sheet->$k && $x++)
 					continue;
 			}
 			if ($x/$y > self::$url->$percent_diff)

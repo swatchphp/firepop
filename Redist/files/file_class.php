@@ -7,19 +7,31 @@ require_once 'filemngr.php';
 
 class file_class implements files {
 
-	static $path_user;
-	static $path_server;
 	static $url;
+	static $setup;
 
-	function __construct() {
-		self::$path_user = '/';
-		self::$path_server = '/';
-		self::$url = new \Redist\url\pURL();
+	public static function user_log_dir() {
+		// Default Directories and files for configuation in pUrl	//
+		return "user_logs/";			//
+	}
+		
+	public static function server_log_dir() {
+		// Default Directories and files for configuation in pUrl	//
+		return "server_logs/";			//
 	}
 	
 	// duplicate of save_user_log
-	public static function update_user($token) {
-		self::save_user_log($token);
+	public static function update_user() {
+		self::save_user_log($_SERVER['REMOTE_ADDR']);
+	}
+
+	// duplicate of save_user_log
+	public static function save_user_log() {
+		$hash = hash("sha256", utf8_encode($_SERVER['REMOTE_ADDR']));
+		$str_dir = self::user_log_dir()
+		.$hash;
+		echo self::user_log_dir().$hash;
+		file_put_contents(self::user_log_dir().$hash, json_encode(\Redist\url\purl::$request));
 	}
 
 	// For curl operations
@@ -29,15 +41,16 @@ class file_class implements files {
     
 	//save $this
 	public static function save_server_log($filename = "server.conf") {
-		file_put_contents(self::$path_server.$filename, json_encode(self));
+
+		file_put_contents(self::server_log_dir().$filename, json_encode(self));
 	}
 
 	// load everything
 	public static function get_server_log($filename = "server.conf") {
 		$fp = "";
-		if (!file_exists(self::$path_server.$filename))
+		if (!file_exists(self::server_log_dir().$filename))
 			return false;
-		$dim = file_get_contents(self::$path_user.$filename);
+		$dim = file_get_contents(self::user_log_dir().$filename);
 		$decoded = json_decode($dim);
 		foreach ($decoded as $k=>$v)
 			self::$k = $v;
@@ -50,7 +63,7 @@ class file_class implements files {
 			return false;
 		$dim = file_get_contents($filename);
 		$users = json_decode($dim);
-		$files = scandir(self::$path_user);
+		$files = scandir(self::user_log_dir());
 		if (sizeof((array)$users) > 0)
 			self::$users = array_intersect($users, (array)$files);
 	}
@@ -59,10 +72,15 @@ class file_class implements files {
 	// for SESSID a lot. It's called ['session']
 	// to our script. It should be sent with the
 	// incoming request.
-	public static function get_user_log($filename) {
-		//$filename = $_COOKIE['PHPSESSID'];
-		$dim = file_get_contents(self::$path_user.$filename);
-		self::$user = json_decode($dim);
+	public static function get_user_log() {
+		$hash = hash("sha256", utf8_encode($_SERVER['REMOTE_ADDR']));
+		echo $hash;
+		if (file_exists(self::user_log_dir().$hash))
+			$dim = file_get_contents(self::user_log_dir().$hash);
+		else
+			return false;
+		return json_decode($dim);
 	}
+
 
 }

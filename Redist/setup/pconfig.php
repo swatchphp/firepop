@@ -33,12 +33,13 @@
 */
 
 namespace Redist\setup;
-class pCon {
+
+class pConfig {
 
 	static $path_user;
 	static $path_server;
 
-	public static function setup() {
+	function __construct() {
 	// Default Directories and files for configuation in pUrl	//
 		self::$path_user = "user_logs/";			//
 		self::$path_server = "server_logs/";			//
@@ -46,10 +47,10 @@ class pCon {
 			mkdir(self::$path_user);			//
 		if (!is_dir(self::$path_server))			//
 			mkdir(self::$path_server);			//
-		if (!file_exists("spoof_list"))				//
-			touch("spoof_list");				//
-		if (!file_exists("users.conf"))				//
-			touch("users.conf");				//
+		if (!file_exists(self::$path_server . "/spoof_list"))				//
+			touch(self::$path_server . "/spoof_list");				//
+		if (!file_exists(self::$path_server . "/users.conf"))				//
+			touch(self::$path_server . "/users.conf");				//
 	}
 
 }
