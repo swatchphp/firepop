@@ -32,12 +32,6 @@ class file_class implements files {
 		file_put_contents(self::$path_server.$filename, json_encode(self));
 	}
 
-	// save everything but ['server']
-	public static function save_user_log($filename = "users.log") {
-		$string = self::$url->request;
-		file_put_contents(self::$path_user.$filename, json_encode($string));			
-	}
-
 	// load everything
 	public static function get_server_log($filename = "server.conf") {
 		$fp = "";

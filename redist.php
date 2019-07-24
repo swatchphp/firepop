@@ -40,11 +40,9 @@ class Redist {
 	// ***
 	public static function parse_call() {
 		self::$url->spoof_check();
-		echo "$ ";
-	//	self::$url->add_referer();
-		echo "$$ ";
+		
 		self::$url->get_servers();
-		echo "$$$ ";
+		
 		if (isset($url->request) && sizeof(self::$url->request) == 4)
 			exit();
 		if (!self::$url->match_remote_server()) {
@@ -61,13 +59,12 @@ class Redist {
 
 		$host = $_SERVER['REMOTE_ADDR'];
 		self::$url->disassemble_IP($host);
-		echo "$ ";
+		
 		self::$files->get_user_queue();
-		echo "$$ ";
+		
 		self::$url->get_sessions();
-		echo "$$$ ";
+
 		self::$url->patch_connection();
-		echo "$$$$ ";
 
 	}
 

@@ -10,8 +10,6 @@ interface files {
 	// Return false if fil does not exist
 	// Create self:: from file is it does
 	public static function get_server_log($filename);
-	// This saves a user's cookies and routes
-	public static function save_user_log($filename);
 	// This retrieves the JSON of users in the
 	// queue [users waiting to be given their request]
 	public static function get_user_queue($filename = "users.conf");

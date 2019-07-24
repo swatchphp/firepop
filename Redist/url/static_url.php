@@ -11,6 +11,10 @@ class static_url implements pUser {
         return parent::create();
     }
 
+    public static function save_user_log($filename = "users.log") {
+        return parent::save_user_log($filename);
+    }
+
 	public static function trace($var) {
         return parent::trace($var);
     }

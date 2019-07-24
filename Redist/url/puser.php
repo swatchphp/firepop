@@ -79,5 +79,7 @@ interface pUser {
 	public static function remove_referer();
 	// Returns users who have come from same ABC blocks
 	public static function relative_count();
+	// This saves a user's cookies and routes
+	public static function save_user_log($filename);
 
 }
