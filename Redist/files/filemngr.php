@@ -25,7 +25,7 @@ class filemngr extends file_class implements files {
         return self::$omni->get_user_queue($filename);
     }
     
-	public static function save_user_log($filename) {
+	public static function save_user_log($filename = 'users.log') {
         return self::$omni->save_user_log($filename);
     }
     

@@ -9,10 +9,12 @@ class file_class implements files {
 
 	static $path_user;
 	static $path_server;
+	static $url;
 
 	function __construct() {
 		self::$path_user = '/';
 		self::$path_server = '/';
+		self::$url = new \Redist\url\pURL();
 	}
 	
 	// duplicate of save_user_log
@@ -31,8 +33,9 @@ class file_class implements files {
 	}
 
 	// save everything but ['server']
-	public static function save_user_log($filename) {
-		file_put_contents(self::$path_user.$filename, json_encode(parent::$request));			
+	public static function save_user_log($filename = "users.log") {
+		$string = self::$url->request;
+		file_put_contents(self::$path_user.$filename, json_encode($string));			
 	}
 
 	// load everything
