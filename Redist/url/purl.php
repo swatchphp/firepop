@@ -36,48 +36,48 @@ class pURL implements pUser {
 	static $files;
 	static $setup;
 	static $method;
+	static $req;
+	static $hash;
+	static $temp;
 
 	public static function create() {
 		
 		self::$files = new \Redist\files\filemngr();
 		self::$setup = new \Redist\setup\pConfig();
-		self::$request = array();
-		self::$request['cookie_sheet'] = array();
-		if (self::$files->get_user_log() != false) {
-			$request = self::$files->get_user_log();
-		}
-		echo "$ ";
-		self::$request['cookie_sheet']['session'] = $_SERVER['REMOTE_ADDR'];
+		self::$hash = hash("sha256", $_SERVER['REMOTE_ADDR']);
+		if (file_exists(self::$files->user_log_dir().self::$hash)) {
+			self::$request[] = self::$files->get_user_log();
 
+		}
+		if (isset($_SERVER['HTTP_REFERER'])) {
+			self::$request['session'][$_SERVER['HTTP_REFERER']]['user_addr'] = $_SERVER['REMOTE_ADDR'];
+		}
+		else
+			self::$request['session']['direct']['user_addr'] = $_SERVER['REMOTE_ADDR'];
 	// Get query string in either GET or POST
 		if (isset($_SERVER['HTTP_REFERER']))
-			self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['data'] = ($_SERVER['REQUEST_METHOD'] == "GET") ? ($_GET) : ($_POST);
+			self::$request['session'][$_SERVER['HTTP_REFERER']]['data'] = ($_SERVER['REQUEST_METHOD'] == "GET") ? ($_GET) : ($_POST);
 		else {
-			self::$request['cookie_sheet']['direct']['data'] = ($_SERVER['REQUEST_METHOD'] == "GET") ? ($_GET) : ($_POST);
-			if (isset(self::$request['cookie_sheet']['direct']['self']) && is_int(self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['self']))
-				self::$request['cookie_sheet']['direct']['self'] += 1;
+			self::$request['session']['direct']['data'] = ($_SERVER['REQUEST_METHOD'] == "GET") ? ($_GET) : ($_POST);
+			if (isset(self::$request['session']['direct']['self']) && is_int(self::$request['session'][$_SERVER['HTTP_REFERER']]['self']))
+				self::$request['session']['direct']['self'] += 1;
 			else
-				self::$request['cookie_sheet']['direct']['self'] = 1;
+				self::$request['session']['direct']['self'] = 1;
 		}
-	// Get incoming address for relations to other IP class visitors
-		self::$request['cookie_sheet']['user_addr'] = $_SERVER['REMOTE_ADDR'];
 	// Let's setup the Cookie Sheets so each address is accommodated for
 		if (isset($_COOKIE) && count($_COOKIE) > 0 // The target_pg, below, is for the redirtect
 			&& isset($_SERVER['HTTP_REFERER'])
-			&& isset(self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['target_pg'])
+			&& isset(self::$request['session'][$_SERVER['HTTP_REFERER']]['target_pg'])
 			&& isset($_COOKIE))
-			self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['cookies'] = $_COOKIE;
-		else if (isset($_SERVER['HTTP_REFERER']) && !isset(self::$request->cookie_sheet->$_SERVER['HTTP_REFERER']->target_pg))
-			self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['self'] = 'localhost';
-	// There are a couple things we use in pUrl to look at our users //
-		if (isset($_SERVER['HTTP_REFERER']))
-			self::$request['cookie_sheet']['refer_by'][] = $_SERVER['HTTP_REFERER'];
-		self::$request['cookie_sheet']['relative'] = [];	// 
-		if (isset($_SERVER['HTTP_REFERER']))
+			self::$request['session'][$_SERVER['HTTP_REFERER']]['cookies'] = $_COOKIE;
+			// There are a couple things we use in pUrl to look at our users //
+		if (isset($_SERVER['HTTP_REFERER'])) {
+			self::$request['session'][$_SERVER['HTTP_REFERER']]['refer_by'][] = $_SERVER['HTTP_REFERER'];
+			self::$request['session'][$_SERVER['HTTP_REFERER']]['relative'] = [];	// 
 			self::add_referer();
+		}
 	// This is for listing all users in the queue
 		self::$users = [];
-		echo "$ ";
 	// Default is to turn off HTTPS:// but the program figures it out itself
 	// for the most part, but if you do run into trouble, just run this static function
 		self::option_ssl(false);
@@ -98,18 +98,18 @@ class pURL implements pUser {
 
 	// input the query string
 	public static function get_servers() {
-		if (!isset(self::$request['cookie_sheet']['server']))
+		if (!isset($_SERVER['HTTP_REFERER']) || !isset(self::$request['session'][$_SERVER['HTTP_REFERER']]['server']))
 			return null;
-		self::$servers = self::$request['cookie_sheet']['server'];
-		return self::$request['cookie_sheet']['server'];
+		self::$servers = self::$request['session'][$_SERVER['HTTP_REFERER']]['server'];
+		return self::$request['session'][$_SERVER['HTTP_REFERER']]['server'];
 	}
 
 	// input the query string
 	public static function get_sessions() {
 		
-		if (!isset(self::$request['cookie_sheet']['session']))
+		if (!isset(self::$request['session'][$_SERVER['HTTP_REFERER']]))
 			return null;
-		return self::$request['cookie_sheet']['session'];
+		return self::$request['session'][$_SERVER['HTTP_REFERER']];
 	}
 
 	// return the number of users present
@@ -152,7 +152,7 @@ class pURL implements pUser {
 
 	public static function update_queue() {
 		
-		self::$files->save_user_log(self::$request['cookie_sheet']['session']);
+		self::$files->save_user_log(self::$request['session'][$_SERVER['HTTP_REFERER']]);
 		file_put_contents(self::$setup->path_server . "/users.conf", json_encode(self::$users));
 	}
 
@@ -168,11 +168,11 @@ class pURL implements pUser {
 		$ipv4 = gethostbyname($output);
 		preg_match_all("/(\d{1,3}|\.{0})/", $ipv4, $ip_pieces);
 		$ip_pieces = $ip_pieces[0];
-		self::$request['cookie_sheet']['from_addr'] = [];
-		self::$request['cookie_sheet']['from_addr']['A'] = $ip_pieces[0];
-		self::$request['cookie_sheet']['from_addr']['B'] = $ip_pieces[1];
-		self::$request['cookie_sheet']['from_addr']['C'] = $ip_pieces[2];
-		self::$request['cookie_sheet']['from_addr']['D'] = $ip_pieces[3];
+		self::$request['session'][$_SERVER['HTTP_REFERER']]['from_addr'] = [];
+		self::$request['session'][$_SERVER['HTTP_REFERER']]['from_addr']['A'] = $ip_pieces[0];
+		self::$request['session'][$_SERVER['HTTP_REFERER']]['from_addr']['B'] = $ip_pieces[1];
+		self::$request['session'][$_SERVER['HTTP_REFERER']]['from_addr']['C'] = $ip_pieces[2];
+		self::$request['session'][$_SERVER['HTTP_REFERER']]['from_addr']['D'] = $ip_pieces[3];
 		self::make_relationships();
 	}
 
@@ -180,37 +180,37 @@ class pURL implements pUser {
 		
 		$new_relations = [];
 		foreach (self::$users->cookie_sheet as $k => $v1) {
-			if ($v1 != "from_addr" || $v1->cookie_sheet->session == self::$request['cookie_sheet']['session'])
+			if ($v1 != "from_addr" || $v1->cookie_sheet->session == self::$request['session'][$_SERVER['HTTP_REFERER']])
 				continue;
-			if (self::$request['cookie_sheet']['from_addr']['A'] == $v1->cookie_sheet->A && self::$request['cookie_sheet']['from_addr']['B'] == $v1->cookie_sheet->B &&
-				self::$request['cookie_sheet']['from_addr']['C'] == $v1->cookie_sheet->C)
+			if (self::$request['session'][$_SERVER['HTTP_REFERER']]['from_addr']['A'] == $v1->cookie_sheet->A && self::$request['session'][$_SERVER['HTTP_REFERER']]['from_addr']['B'] == $v1->cookie_sheet->B &&
+				self::$request['session'][$_SERVER['HTTP_REFERER']]['from_addr']['C'] == $v1->cookie_sheet->C)
 				$new_relations[] = $v->cookie_sheet->session;
 		}
 		$unique = array_unique($new_relations);
-		self::$request['cookie_sheet']['relative'] = $new_relations;
+		self::$request['session'][$_SERVER['HTTP_REFERER']]['relative'] = $new_relations;
 	}
 
 	public static function add_referer () {
 		
-		if (isset(self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['target_pg'])
-			&& isset(self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['cookies'][self::$request[$_SERVER['HTTP_REFERER']]])
+		if (isset(self::$request['session'][$_SERVER['HTTP_REFERER']]['target_pg'])
+			&& isset(self::$request['session'][$_SERVER['HTTP_REFERER']]['cookies'][self::$request[$_SERVER['HTTP_REFERER']]])
 			&& isset($_SERVER['HTTP_REFERER']))
-			self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['cookies'][self::$request[$_SERVER['HTTP_REFERER']]] = $_SERVER['HTTP_REFERER'];
-		else if (isset(self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['cookies']['self']) && is_int(self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['cookies']['self']))
-			self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['cookies']['self'] += 1;
+			self::$request['session'][$_SERVER['HTTP_REFERER']]['cookies'][self::$request[$_SERVER['HTTP_REFERER']]] = $_SERVER['HTTP_REFERER'];
+		else if (isset(self::$request['session'][$_SERVER['HTTP_REFERER']]['cookies']['self']) && is_int(self::$request['session'][$_SERVER['HTTP_REFERER']]['cookies']['self']))
+			self::$request['session'][$_SERVER['HTTP_REFERER']]['cookies']['self'] += 1;
 		else
-			self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['cookies']['self'] = 1;
+			self::$request['session'][$_SERVER['HTTP_REFERER']]['cookies']['self'] = 1;
 		self::remove_referer();
 		return true;
 	}
 
 	public static function remove_referer() {
 		
-		if (isset(self::$request['cookie_sheet']['refer_by']) && sizeof(self::$request['cookie_sheet']['refer_by']) == self::$max_history)
-			array_shift(self::$request['cookie_sheet']['refer_by']);
+		if (isset(self::$request['session'][$_SERVER['HTTP_REFERER']]['refer_by']) && sizeof(self::$request['session'][$_SERVER['HTTP_REFERER']]['refer_by']) == self::$max_history)
+			array_shift(self::$request['session'][$_SERVER['HTTP_REFERER']]['refer_by']);
 		else
 			return 0;
-		return sizeof(self::$request['cookie_sheet']['refer_by']);
+		return sizeof(self::$request['session'][$_SERVER['HTTP_REFERER']]['refer_by']);
 	}
 
 	//***
@@ -243,10 +243,10 @@ class pURL implements pUser {
 			exit();
 		}
 		
-		$host = self::$request['cookie_sheet']['user_addr'];
+		$host = self::$request['session'][$_SERVER['HTTP_REFERER']]['user_addr'];
 		self::disassemble_IP($host);
 		self::$files->get_user_queue();
-		self::$users[] = self::$request['cookie_sheet']['session'];
+		self::$users[] = self::$request['session'][$_SERVER['HTTP_REFERER']];
 		self::patch_connection();
 	}
 
@@ -260,16 +260,16 @@ class pURL implements pUser {
 		$spoof_list = json_decode($pre_spoof_filter);
 		if ($spoof_list == null)
 			return true;
-		if (in_array(self::$request['cookie_sheet']['user_addr'],$spoof_list))
+		if (in_array(self::$request['session'][$_SERVER['HTTP_REFERER']]['user_addr'],$spoof_list))
 			exit();
 	}
 
 	//***
 	public static function match_remote_server() {
-		if (isset(self::$request['cookie_sheet']['user_addr']))
-			$host = self::$request['cookie_sheet']['user_addr'];
+		if (isset($_SERVER['HTTP_REFERER']) && (isset(self::$request['session'][$_SERVER['HTTP_REFERER']]['user_addr'])))
+			$host = self::$request['session'][$_SERVER['HTTP_REFERER']]['user_addr'];
 		else
-			return false;
+			$host = self::$request['session']['direct']['user_addr'];
 
 		$trim = "";
 		if ($host == "::1" || str_replace("localhost","",$host) == true)
@@ -280,7 +280,7 @@ class pURL implements pUser {
 			self::option_ssl(true);
 		if (filter_var($host, FILTER_VALIDATE_URL) == false
 			&& ($check_addr_list = gethostbynamel($host)) == false) {
-			$spoof_list[] = self::$request['cookie_sheet']['user_addr'];
+			$spoof_list[] = self::$request['session'][$_SERVER['HTTP_REFERER']]['user_addr'];
 			$spoof_list = array_unique($spoof_list);
 			file_put_contents("spoof_list", $spoof_list);
 			return false;
@@ -290,7 +290,10 @@ class pURL implements pUser {
 
 	//***
 	public static function match_target_server() {
-		$host = self::$request[$_SERVER['HTTP_REFERER']];
+		if (isset($_SERVER['HTTP_REFERER']) && (isset(self::$request['session'][$_SERVER['HTTP_REFERER']]['data']['target_pg'])))
+			$host = self::$request['session'][$_SERVER['HTTP_REFERER']]['data']['target_pg'];
+		else
+			$host = self::$request['session']['data']['target_pg'];
 		$trim = "";
 		if ($host == "::1" || str_replace("localhost","",$host) == true)
 			return true;
@@ -300,7 +303,7 @@ class pURL implements pUser {
 			self::option_ssl(true);
 		if (filter_var($host, FILTER_VALIDATE_URL) == false
 			&& ($check_addr_list = gethostbynamel($host)) == false) {
-			$spoof_list[] = self::$request['cookie_sheet']['user_addr'];
+			$spoof_list[] = self::$request['session'][$_SERVER['HTTP_REFERER']]['user_addr'];
 			$spoof_list = array_unique($spoof_list);
 			file_put_contents("spoof_list", $spoof_list);
 			return false;
@@ -316,9 +319,9 @@ class pURL implements pUser {
 		foreach (self::$user->cookie_sheet as $key) {
 			if ($key != 'from_addr' || json_decode($key) == null)
 				continue;
-			if ($key->A == self::$request['cookie_sheet']['from_addr']['A']
-				&& $key->B == self::$request['cookie_sheet']['from_addr']['B']
-				&& $key->C == self::$request['cookie_sheet']['from_addr']['C'])
+			if ($key->A == self::$request['session'][$_SERVER['HTTP_REFERER']]['from_addr']['A']
+				&& $key->B == self::$request['session'][$_SERVER['HTTP_REFERER']]['from_addr']['B']
+				&& $key->C == self::$request['session'][$_SERVER['HTTP_REFERER']]['from_addr']['C'])
 				$x[] = $relationships;
 		}
 		return $x;
@@ -337,16 +340,16 @@ class pURL implements pUser {
 			}
 		}
 		array_unique(self::$users);
-		if (self::$users[0] != self::$request['cookie_sheet']['session']) {
+		if (self::$users[0] != self::$request['session'][$_SERVER['HTTP_REFERER']]) {
 			$y = file_get_contents(self::$setup->path_server . "/users.conf");
 			$x = json_decode($y);
-			while ($x[0] != self::$request['cookie_sheet']['session'] && time() - self::$timer < 3000) {
+			while ($x[0] != self::$request['session'][$_SERVER['HTTP_REFERER']] && time() - self::$timer < self::$delay) {
 				$y = file_get_contents(self::$setup->path_server . "/users.conf");
 				$x = json_decode($y);	
 			}
 			self::$patch_connection();
 		}
-		array_splice(self::$users, array_search(self::$request['cookie_sheet']['session'], self::$users), 1);
+		array_splice(self::$users, array_search(self::$request['session'][$_SERVER['HTTP_REFERER']], self::$users), 1);
 		self::update_queue();
 		return true;
 	}
@@ -359,16 +362,16 @@ class pURL implements pUser {
 			self::$files->save_user_log($_SERVER['REMOTE_ADDR']);
 			self::update_queue();
 		}
-		else if (isset(self::$request['cookie_sheet']['session'])) {
+		else if (isset(self::$request['session'][$_SERVER['HTTP_REFERER']])) {
 			self::$files->save_user_log($_SERVER['REMOTE_ADDR']);
 			if (self::$users == null)
 				self::$users = [];
 			file_put_contents(self::$setup->path_server . "/users.conf", json_encode(self::$users));		
 		}
 		if (isset($_SERVER['HTTP_REFERER']))
-			header('Location: ' . self::$opt_ssl . self::$request['cookie_sheet'][$_SERVER['HTTP_REFERER']]['data']['target_pg']);
+			header('Location: ' . self::$opt_ssl . self::$request['session'][$_SERVER['HTTP_REFERER']]['data']['target_pg']);
 		else
-			header('Location: ' . self::$opt_ssl . self::$request['cookie_sheet']['direct']['data']['target_pg']);
+			header('Location: ' . self::$opt_ssl . self::$request['session']['direct']['data']['target_pg']);
 
 	}
 
@@ -386,16 +389,23 @@ class pURL implements pUser {
 			echo "Fatal Error: Target address unknown";
 			exit();
 		}
-		else if (isset($_SERVER['HTTP_REFERER']) && !isset(self::$request[$_SERVER['HTTP_REFERER']])) {
-			echo 'No target address';
-			exit();
+		else if (isset($_SERVER['HTTP_REFERER'])) {
+			if (!isset(self::$request['session'][$_SERVER['HTTP_REFERER']]['data']['target_pg']))
+			{
+				echo "Fatal Error: No target address";
+				exit();
+			}
+		}
+		else if (!isset(self::$request['session']['direct']['data']['target_pg'])) {
+			echo "Fatal Error: No target Address";
+			exit();	
 		}
 		return true;
 	}
 	//***
 	public static function run_queue() {
 		
-		if (self::$files->find_user_queue(self::$request['cookie_sheet']['session']) != false)
+		if (self::$files->find_user_queue(self::$request['session'][$_SERVER['HTTP_REFERER']]) != false)
 			self::send_request();
 	}
 

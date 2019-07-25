@@ -9,6 +9,9 @@ class file_class implements files {
 
 	static $url;
 	static $setup;
+	static $temp_array;
+	static $redist;
+	static $server;
 
 	public static function user_log_dir() {
 		// Default Directories and files for configuation in pUrl	//
@@ -28,10 +31,18 @@ class file_class implements files {
 	// duplicate of save_user_log
 	public static function save_user_log() {
 		$hash = hash("sha256", utf8_encode($_SERVER['REMOTE_ADDR']));
-		$str_dir = self::user_log_dir()
-		.$hash;
+		$str_dir = self::user_log_dir();
 		echo self::user_log_dir().$hash;
-		file_put_contents(self::user_log_dir().$hash, json_encode(\Redist\url\purl::$request));
+		self::$temp_array = \Redist\url\purl::$request;
+		self::$redist = array(self::get_user_log());
+		if (self::$redist == false) {
+			file_put_contents(self::user_log_dir().$hash, json_encode(\Redist\url\purl::$request));
+		}
+
+		else {
+			self::$temp_array = array_merge_recursive(self::$temp_array,self::$redist);
+			file_put_contents(self::user_log_dir().$hash, json_encode(self::$temp_array));
+		}
 	}
 
 	// For curl operations
@@ -53,7 +64,7 @@ class file_class implements files {
 		$dim = file_get_contents(self::user_log_dir().$filename);
 		$decoded = json_decode($dim);
 		foreach ($decoded as $k=>$v)
-			self::$k = $v;
+			self::$server->k = $v;
 	}
 
 	// load users in queue
@@ -75,8 +86,11 @@ class file_class implements files {
 	public static function get_user_log() {
 		$hash = hash("sha256", utf8_encode($_SERVER['REMOTE_ADDR']));
 		echo $hash;
-		if (file_exists(self::user_log_dir().$hash))
+		$dim = [];
+		if (file_exists(self::user_log_dir().$hash)) {
 			$dim = file_get_contents(self::user_log_dir().$hash);
+			echo $dim;
+		}
 		else
 			return false;
 		return json_decode($dim);
