@@ -24,7 +24,7 @@ class Redist {
     function instance() {
 		$setup = new \Redist\setup\pConfig();
 	// The static functions for the search object
-	// are in abssearch.phpc
+	// are in abssearch.php
 		self::$search = new \Redist\search\search();
 	// The static functions for the file_class object
 	// are in absfiles.php
